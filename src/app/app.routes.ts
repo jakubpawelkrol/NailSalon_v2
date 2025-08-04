@@ -6,6 +6,7 @@ import { GalleryComponent } from './gallery/gallery.component';
 import { ContactComponent } from './contact/contact.component';
 import { AdminCalendarComponent } from './admin-calendar/admin-calendar.component';
 import { LoginComponent } from './login/login.component';
+import { AboutComponent } from './about/about.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -15,5 +16,6 @@ export const routes: Routes = [
     { path: 'gallery', component: GalleryComponent },
     { path: 'contact', component: ContactComponent },
     { path: 'admin', component: AdminCalendarComponent },
-    { path: 'login', component: LoginComponent }
+    { path: 'login', component: LoginComponent },
+    { path: 'about', component: AboutComponent }
 ];

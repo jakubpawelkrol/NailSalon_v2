@@ -1,0 +1,51 @@
+.site-header {
+    position: sticky;
+    top: 0;
+    background-color: #cc8899;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+  
+  .login-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+  
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .logo-icon {
+    height: 40px;
+    width: auto;
+  }
+  
+  .logo-text {
+    text-decoration: none;     // 🔁 removes underline
+    color: white;              // or your preferred header text color
+    font-size: 1.5rem;         // adjust for size
+    font-weight: bold;
+    font-family: 'Playfair Display', serif; // or a fancier one
+    margin-left: 10px;
+    cursor: pointer;
+  }
+  .logo-text:hover {
+    color: #ffddee; // or another light pink/contrast tone
+  }

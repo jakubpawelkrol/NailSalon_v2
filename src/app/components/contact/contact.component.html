@@ -1,1 +1,50 @@
-<p>contact works!</p>
+<div class="contact-container">
+  <!-- Contact Info -->
+  <div class="contact-info">
+    <h2>Kontakt</h2>
+    <p><strong>Tel: </strong> <a href="tel:+48123456789">+48 123 456 789</a></p>
+    <p>
+      <strong>Email: </strong>
+      <a href="mailto:example@email.com">example@email.com</a>
+    </p>
+    <p><strong>Adres: </strong> ul. Wiejska 1, 00-000 Warszawa, Polska</p>
+    <p>
+      <strong>Instagram: </strong>
+      <a href="https://instagram.com/to_be_filled" target="_blank">
+        <i class="fa-brands fa-square-instagram"
+          ><img src="https://fontawesome.com/icons/square-instagram"
+        /></i>
+        @pazurki
+      </a>
+    </p>
+  </div>
+
+  <!-- Contact Form -->
+  <div class="contact-form">
+    <h2>Wyślij wiadomość</h2>
+    <form (ngSubmit)="submitForm()" #form="ngForm">
+      <input
+        type="text"
+        name="name"
+        placeholder="Twoje imię"
+        [(ngModel)]="contactForm.name"
+        required
+      />
+      <input
+        type="email"
+        name="email"
+        placeholder="Twój Email"
+        [(ngModel)]="contactForm.email"
+        required
+      />
+      <textarea
+        name="message"
+        placeholder="Wiadomość"
+        rows="5"
+        [(ngModel)]="contactForm.message"
+        required
+      ></textarea>
+      <button type="submit" [disabled]="form.invalid">Wyślij</button>
+    </form>
+  </div>
+</div>

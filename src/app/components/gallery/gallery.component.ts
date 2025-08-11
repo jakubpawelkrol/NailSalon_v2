@@ -2,6 +2,7 @@ import { Component, effect, HostListener, inject } from '@angular/core';
 import { RestService } from '../../services/common/rest-service.service';
 import { GalleryStateService } from '../../services/common/gallery-state.service';
 import { CommonModule } from '@angular/common';
+import { PhotoModel } from '../../models/gallery.model';
 
 @Component({
   selector: 'app-gallery',
@@ -18,7 +19,7 @@ export class GalleryComponent {
     effect(() => { this.galleryService.setImages(this.restService.photos()); });
   }
 
-  openImage(img: string) {
+  openImage(img: PhotoModel) {
     this.galleryService.open(img);
   }
 

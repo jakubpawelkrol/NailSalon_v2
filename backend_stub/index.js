@@ -22,8 +22,16 @@ app.get('/api/gallery', (req, res) => {
       /\.(jpg|jpeg|png|gif|webp)$/i.test(file)
     );
 
-    const imageUrls = imageFiles.map(name => `http://localhost:${PORT}/gallery/${name}`);
-    res.json(imageUrls);
+    const imageObjects = imageFiles.map(name => {
+      const url = `http://localhost:${PORT}/gallery/${name}`;
+      return {
+        itemImageSrc: url,
+        thumbnailImageSrc: url, // can be a separate thumbnail path if you generate them
+        alt: name,
+        title: name
+      };
+    });
+    res.json(imageObjects);
   });
 });
 

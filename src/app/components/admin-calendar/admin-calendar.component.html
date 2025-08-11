@@ -37,7 +37,7 @@
             <ul>
             @for (appt of selectedDay()!.appointments; track appt.id) {
                 <li>
-                    <strong>{{ appt.time }}</strong> – {{ appt.clientName }}
+                    <strong>{{ appt.time }}</strong> – {{ appt.name }}, {{ appt.serviceText }}
                 </li>
             }
             </ul>

@@ -6,7 +6,7 @@
         <h3>{{ cat }}</h3>
   
         <div class="cards">
-          @for (s of byCategory(cat); track s.name) {
+          @for (s of byCategory(cat); track s.id) {
             <article class="card" aria-label="pozycja cennika">
               <div class="header">
                 <span class="name">

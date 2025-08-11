@@ -3,7 +3,7 @@
   <div class="gallery-grid">
     @for (img of galleryService.getImages(); track img) {
     <div class="thumbnail-wrapper" (click)="openImage(img)">
-      <img [src]="img" alt="kaboom" class="thumbnail" />
+      <img [src]="img.itemImageSrc" [alt]="img.alt" class="thumbnail" />
     </div>
     }
   </div>
@@ -17,7 +17,7 @@
       &#10094;
     </button>
     <img
-      [src]="galleryService.getSelectedImage()"
+      [src]="galleryService.getSelectedImage()?.itemImageSrc"
       class="full-image"
       (click)="$event.stopPropagation()"
     />

@@ -1,13 +1,14 @@
 import { Injectable, signal } from '@angular/core';
+import { PhotoModel } from '../../models/gallery.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GalleryStateService {
-  private images = signal<string[]>([]);
-  private selectedImage = signal<string | null>(null);
+  private images = signal<PhotoModel[]>([]);
+  private selectedImage = signal<PhotoModel | null>(null);
 
-  setImages(imgs: string[]) {
+  setImages(imgs: PhotoModel[]) {
     this.images.set(imgs);
   }
 
@@ -19,7 +20,7 @@ export class GalleryStateService {
     return this.selectedImage();
   }
 
-  open(img: string) {
+  open(img: PhotoModel) {
     this.selectedImage.set(img);
   }
 

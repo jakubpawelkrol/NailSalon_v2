@@ -1,1 +1,56 @@
-<p>schedule works!</p>
+<section class="sched">
+    <h2>Umów wizytę</h2>
+  
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+      <div class="row">
+        <label>Usługa</label>
+        <input type="text" formControlName="serviceText" placeholder="Np. Manicure hybrydowy" />
+        @if (hasErr('serviceText','required')) { <small class="err">To pole jest wymagane</small> }
+        @if (hasErr('serviceText','minlength')) { <small class="err">Min. 2 znaki</small> }
+      </div>
+  
+      <div class="grid">
+        <div class="row">
+          <label>Data</label>
+          <input type="date" formControlName="date" />
+          @if (hasErr('date','required')) { <small class="err">Podaj datę</small> }
+        </div>
+        <div class="row">
+          <label>Godzina</label>
+          <input type="time" formControlName="time" />
+          @if (hasErr('time','required')) { <small class="err">Podaj godzinę</small> }
+        </div>
+      </div>
+  
+      <div class="row">
+        <label>Imię i nazwisko</label>
+        <input type="text" formControlName="name" placeholder="Np. Anna Kowalska" />
+        @if (hasErr('name','required')) { <small class="err">To pole jest wymagane</small> }
+        @if (hasErr('name','minlength')) { <small class="err">Min. 2 znaki</small> }
+      </div>
+  
+      <div class="row">
+        <label>Uwagi (opcjonalnie)</label>
+        <textarea rows="3" formControlName="notes" placeholder="Dodatkowe informacje…"></textarea>
+      </div>
+  
+      <button class="btn" type="submit" [disabled]="submitting || form.invalid">
+        @if (!submitting) { Zarezerwuj termin } @else { Zapisywanie… }
+      </button>
+  
+      @if (successMsg) { <div class="alert success">{{ successMsg }}</div> }
+      @if (errorMsg) { <div class="alert error">{{ errorMsg }}</div> }
+    </form>
+  
+    @if (todays.length) {
+      <div class="preview">
+        <h3>Dzisiejsze rezerwacje ({{ form.get('date')?.value }})</h3>
+        <ul>
+          @for (a of todays; track a.id) {
+            <li><strong>{{ a.time }}</strong> — {{ a.serviceText }} ({{ a.name }})</li>
+          }
+        </ul>
+      </div>
+    }
+  </section>
+  

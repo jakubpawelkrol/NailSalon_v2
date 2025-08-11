@@ -1,8 +1,15 @@
 <section class="auth-wrap">
     <div class="card">
-      <h2>Zaloguj się</h2>
+      <h2>Rejestracja</h2>
   
       <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+        <div class="row">
+          <label for="name">Imię i nazwisko</label>
+          <input id="name" type="text" formControlName="name" placeholder="Anna Kowalska" />
+          @if (hasErr('name','required')) { <small class="err">Podaj imię i nazwisko</small> }
+          @if (hasErr('name','minlength')) { <small class="err">Min. 2 znaki</small> }
+        </div>
+  
         <div class="row">
           <label for="email">E-mail</label>
           <input id="email" type="email" formControlName="email" placeholder="anna@example.com" />
@@ -17,15 +24,15 @@
         </div>
   
         <button class="btn" type="submit" [disabled]="loading || form.invalid">
-          @if (!loading) { Zaloguj } @else { Logowanie… }
+          @if (!loading) { Utwórz konto } @else { Tworzenie… }
         </button>
   
         @if (error) { <div class="alert error">{{ error }}</div> }
       </form>
   
       <div class="alt">
-        <span>Nie masz konta?</span>
-        <a class="link-btn" routerLink="/signup">Zarejestruj się</a>
+        <span>Masz już konto?</span>
+        <a class="link-btn" routerLink="/login">Zaloguj się</a>
       </div>
     </div>
   </section>

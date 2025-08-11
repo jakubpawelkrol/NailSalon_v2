@@ -47,6 +47,8 @@ export class ScheduleComponent {
       notes: values.notes || undefined,
     };
 
+    console.log('Submitting appointment:', appt);
+
     this.submitting = true;
     try {
       this.store.add(appt);

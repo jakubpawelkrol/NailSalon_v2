@@ -1,10 +1,11 @@
+/* Same vibe as login; keep styles in sync */
 :host { display:block; }
 .auth-wrap {
   min-height: 70vh; display:grid; place-items:center;
   background: #ffe4ec;
 }
 .card {
-  width:min(420px, 92vw); background:#fff; border-radius:14px;
+  width:min(460px, 92vw); background:#fff; border-radius:14px;
   padding:24px; box-shadow:0 10px 30px rgba(0,0,0,.08);
   border:1px solid #ffd0de;
 }

@@ -1,16 +1,18 @@
+// signup.component.ts (standalone)
 import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MockAuthService } from '../../services/common/mock-auth.service';
-import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { MockAuthService } from '../../services/common/mock-auth.service';
 
 @Component({
-  selector: 'app-login',
+  standalone: true,
+  selector: 'app-signup',
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  templateUrl: './signup.component.html',
+  styleUrl: './signup.component.scss',
 })
-export class LoginComponent {
+export class SignupComponent {
   private fb = inject(FormBuilder);
   private auth = inject(MockAuthService);
   private router = inject(Router);
@@ -19,6 +21,7 @@ export class LoginComponent {
   error = '';
 
   form = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
@@ -31,10 +34,14 @@ export class LoginComponent {
     }
     this.loading = true;
     try {
-      await this.auth.login(this.form.value.email!, this.form.value.password!);
+      await this.auth.signup(
+        this.form.value.name!,
+        this.form.value.email!,
+        this.form.value.password!
+      );
       this.router.navigate(['/']);
     } catch (e: any) {
-      this.error = e?.message || 'Problem z logowaniem';
+      this.error = e?.message || 'Problem z rejestracją';
     } finally {
       this.loading = false;
     }

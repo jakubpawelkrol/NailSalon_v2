@@ -1,6 +1,12 @@
 <header class="site-header">
   <div class="logo">
-    <a routerLink="/"><img src="assets/logo.svg" alt="Gowno" class="logo-icon" /></a>
+    <a routerLink="/"><img src="assets/logo.svg" alt="Logo" class="logo-icon" /></a>
   </div>
+
+  @if (auth.isLoggedIn()) {
+    <span class="welcome-text">{{ greeting() }}</span>
+    <button (click)="logout()">Wyloguj</button>
+  } @else {
     <a routerLink="/login" class="login-link">Zaloguj</a>
+  }
 </header>

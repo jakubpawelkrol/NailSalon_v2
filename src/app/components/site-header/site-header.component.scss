@@ -1,52 +1,45 @@
 .site-header {
-    position: sticky;
-    top: 0;
-    background-color: #cc8899;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2px 24px;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .logo {
-    display: flex;
-    align-items: center;
-  }
-  
-  .login-link {
-    color: white;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 1.5rem;
-  
-    &:hover {
-      text-decoration: underline;
-    }
-  }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 1rem;
+  background-color: #c56e88; // pinkish palette background
+}
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.logo-icon {
+  height: 60px;
+}
+
+.welcome-text {
+  margin-right: 1rem;
+  font-weight: 500;
+}
+
+button {
+  background-color: #ff5f91;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #ff3f77;
   }
-  
-  .logo-icon {
-    height: 75px;
-    width: auto;
+}
+
+.login-link {
+  background-color: #ff5f91;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #ff3f77;
   }
-  
-  .logo-text {
-    text-decoration: none;     // 🔁 removes underline
-    color: white;              // or your preferred header text color
-    font-size: 1.5rem;         // adjust for size
-    font-weight: bold;
-    font-family: 'Playfair Display', serif; // or a fancier one
-    margin-left: 10px;
-    cursor: pointer;
-  }
-  .logo-text:hover {
-    color: #ffddee; // or another light pink/contrast tone
-  }
+}

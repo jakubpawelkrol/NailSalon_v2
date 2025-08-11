@@ -3,7 +3,7 @@
   <div class="gallery-grid">
     @for (img of galleryService.getImages(); track img) {
     <div class="thumbnail-wrapper" (click)="openImage(img)">
-      <img [src]="img.itemImageSrc" [alt]="img.alt" class="thumbnail" />
+      <img [src]="img.thumbnailImageSrc" [alt]="img.alt" class="thumbnail" />
     </div>
     }
   </div>

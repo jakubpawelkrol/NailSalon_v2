@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, HostListener, inject } from '@angular/core';
 import { RestService } from '../../services/common/rest-service.service';
 import { GalleryStateService } from '../../services/common/gallery-state.service';
 import { CommonModule } from '@angular/common';
@@ -11,18 +11,11 @@ import { CommonModule } from '@angular/common';
 })
 export class GalleryComponent {
   galleryService = inject(GalleryStateService);
-  private restService = inject(RestService);
+  restService = inject(RestService);
 
-  ngOnInit() {
-    this.restService.getGalleryPhotos().subscribe({
-      next: (data) => {
-        console.log('Images read:', data);
-        this.galleryService.setImages(data);
-      },
-      error: (err) => {
-        console.error('Failed to load images:', err);
-      },
-    });
+  constructor() {
+    this.restService.getGalleryPhotos();
+    effect(() => { this.galleryService.setImages(this.restService.photos()); });
   }
 
   openImage(img: string) {
@@ -39,5 +32,22 @@ export class GalleryComponent {
 
   nextImage() {
     this.galleryService.next();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKey(event: KeyboardEvent) {
+    if (!this.galleryService.getSelectedImage()) return;
+
+    switch (event.key) {
+      case 'Escape':
+        this.galleryService.close();
+        break;
+      case 'ArrowLeft':
+        this.galleryService.prev();
+        break;
+      case 'ArrowRight':
+        this.galleryService.next();
+        break;
+    }
   }
 }

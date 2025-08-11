@@ -1,7 +1,7 @@
 <div class="gallery-container">
   <h2>Moje prace</h2>
   <div class="gallery-grid">
-    @for (img of galleryService.getImages(); track $index) {
+    @for (img of galleryService.getImages(); track img) {
     <div class="thumbnail-wrapper" (click)="openImage(img)">
       <img [src]="img" alt="kaboom" class="thumbnail" />
     </div>
@@ -9,7 +9,7 @@
   </div>
 
   @if (galleryService.getSelectedImage()) {
-  <div class="lightbox" (click)="closeImage()">
+  <div class="lightbox" appGalleryKeyboardControl (click)="closeImage()">
     <button
       class="nav-btn prev"
       (click)="prevImage(); $event.stopPropagation()"

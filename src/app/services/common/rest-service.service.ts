@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -7,8 +7,17 @@ import { Observable } from 'rxjs';
 })
 export class RestService {
   http = inject(HttpClient);
+  private _photos = signal<string[]>([]);
+  readonly photos = this._photos.asReadonly();
 
-  getGalleryPhotos(): Observable<string[]> {
-    return this.http.get<string[]>('http://localhost:3000/api/gallery');
+  getGalleryPhotos(): void {
+    this.http.get<string[]>('http://localhost:3000/api/gallery').subscribe({
+      next: (data) => {
+        this._photos.set(data);
+      },
+      error: (err) => {
+        console.error('Failed to load images:', err);
+      },
+    });
   }
 }

@@ -1,1 +1,32 @@
-<p>services works!</p>
+<section class="services-wrap">
+    <h2>Usługi i cennik</h2>
+  
+    @for (cat of categories(); track cat) {
+      <div class="category">
+        <h3>{{ cat }}</h3>
+  
+        <div class="cards">
+          @for (s of byCategory(cat); track s.name) {
+            <article class="card" aria-label="pozycja cennika">
+              <div class="header">
+                <span class="name">
+                  {{ s.name }}
+                  @if (s.popular) { <span class="popular" title="Popularna usługa">⭐</span> }
+                </span>
+                <span class="price">{{ s.price }} zł</span>
+              </div>
+  
+              @if (s.description) {
+                <p class="desc">{{ s.description }}</p>
+              }
+  
+              <div class="meta">
+                <span class="time" aria-label="czas trwania">⏱ {{ s.time }} min</span>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    }
+  </section>
+  

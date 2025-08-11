@@ -75,3 +75,30 @@ a:hover {
 i {
   font-size: 1.2rem;
 }
+  /* Instagram button */
+  .social {
+    margin-top: 28px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .instagram-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 999px;
+    font-size: 16px;
+    transition: transform .2s ease, box-shadow .2s ease;
+  
+    svg { width: 22px; height: 22px; }
+  
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,.15);
+    }
+  }

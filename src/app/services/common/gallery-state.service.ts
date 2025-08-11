@@ -39,7 +39,7 @@ export class GalleryStateService {
     const curr = this.selectedImage();
     const index = this.images().indexOf(curr!);
     if (index < this.images().length - 1) {
-      this.selectedImage.set(this.images()[index - 1]);
+      this.selectedImage.set(this.images()[index + 1]);
     }
   }
 }

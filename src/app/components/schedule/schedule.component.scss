@@ -88,3 +88,79 @@ select {
 select:focus {
   border-color:#ff4f9a; box-shadow:0 0 0 3px #ffe9f1;
 }
+
+.service-meta {
+  padding: 0.25rem 1rem;
+  background-color: #ffe6ee;
+  border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+
+  .desc {
+    flex-basis: 100%;
+    font-size: 0.9rem;
+    color: #555; 
+    font-style: italic;
+    margin-bottom: 0.3rem;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem; // spacing between icon and text
+    background-color: #ff5f91;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    transition: background-color 0.2s ease;
+
+    svg {
+      stroke: black ;
+    }
+
+    &:hover {
+      background-color: #ff3f77;
+    }
+  }
+}
+
+.date-row {
+  max-width: 360px;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: #7a7a7a;
+  margin-left: 6px;
+}
+
+/* Pretty date input with custom icon */
+.date-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.date-input input[type="date"] {
+  width: 100%;
+  border: 1px solid #ffc1d5;
+  background: #fff;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  color: #333;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+
+.date-input input[type="date"]:hover {
+  border-color: #ff9fc0;
+}
+.date-input input[type="date"]:focus {
+  border-color: #ff4f9a;
+  box-shadow: 0 0 0 3px #ffe9f1;
+}

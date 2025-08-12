@@ -19,29 +19,35 @@
       @if (hasErr('service','required')) { <small class="err">Wybierz usługę</small> }
     </div>
 
-    <!-- Nazwa usługi jako tekst (auto-uzupełniane, można doprecyzować) -->
-    <!-- <div class="row">
-      <label>Nazwa usługi (możesz doprecyzować)</label>
-      <input type="text" formControlName="serviceText" placeholder="Np. Manicure hybrydowy + zdobienia" />
-      @if (hasErr('serviceText','required')) { <small class="err">To pole jest wymagane</small> }
-    </div> -->
-
     <!-- META wybranej usługi -->
     @let svc = form.controls.service.value;
     @if (svc) {
       <div class="service-meta">
-        @if (svc.description) { <div><span class="desc">{{ svc.description }}</span></div> }
-        <span class="chip">⏱ {{ svc.time }} min </span>
-        <span class="chip">💸 {{ svc.price }} zł</span>
-        
+        @if (svc.description) { <span class="desc">{{ svc.description }}</span> }
+        <span class="chip">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+          </svg> 
+           {{ svc.time }} min 
+        </span>
+        <span class="chip">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg> 
+           {{ svc.price }} zł
+        </span>
       </div>
     }
 
     <!-- CZAS TRWANIA + DATA -->
     <div class="grid">
-      <div class="row">
+      <div class="row date-row">
         <label>Data</label>
-        <input type="date" formControlName="date" />
+        <div class="date-input">
+          <input type="date" lang="pl-PL" formControlName="date" aria-label="wybierz datę" />
+        </div>
         @if (hasErr('date','required')) { <small class="err">Podaj datę</small> }
       </div>
     </div>

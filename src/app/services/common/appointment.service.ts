@@ -1,17 +1,33 @@
 import { Injectable, signal } from '@angular/core';
 import { Appointment } from '../../models/appointment.model';
 
+const BUFFER_MIN = 10;
+
+function toMinutes(time: string): number {
+  const [hh, mm] = time.split(':').map(Number);
+  return hh * 60 + mm;
+}
+
+function overlaps(aStart: number, aEnd: number, bStart: number, bEnd: number) {
+  return aStart < bEnd && bStart < aEnd;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AppointmentService {
   private readonly _appointments = signal<Appointment[]>([]);
   readonly appointments = this._appointments.asReadonly();
 
   add(appt: Appointment) {
-    // Simple duplication guard: same date+time+name
-    const exists = this._appointments().some(a =>
-      a.date === appt.date && a.time === appt.time && a.name.trim().toLowerCase() === appt.name.trim().toLowerCase()
-    );
-    if (exists) throw new Error('Ten termin jest już zajęty dla tej osoby.');
+    const dateAppts = this.byDate(appt.date);
+    const start = toMinutes(appt.time);
+    const endWithBuffer = start + appt.duration + BUFFER_MIN;
+
+    const clash = dateAppts.some(a => {
+      const s = toMinutes(a.time);
+      const e = s + a.duration + BUFFER_MIN;
+      return overlaps(start, endWithBuffer, s, e);
+    });
+    if (clash) throw new Error('Ten termin koliduje z inną wizytą.');
 
     this._appointments.update(list => [...list, appt]);
   }

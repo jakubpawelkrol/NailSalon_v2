@@ -3,6 +3,7 @@ export interface Appointment {
     serviceText: string;
     date: string;   // 'YYYY-MM-DD'
     time: string;   // 'HH:mm'
+    duration: number;
     name: string;
     notes?: string;
   }

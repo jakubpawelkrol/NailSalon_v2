@@ -57,3 +57,34 @@ input:focus, textarea:focus {
 }
 .preview h3 { margin:0 0 8px; color:#ff4f9a; }
 .preview ul { margin:0; padding-left:18px; }
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.slot {
+  border: 1px solid #ffc1d5;
+  background: #fff;
+  color: #c61e6b;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.slot:hover { background: #ffe9f1; }
+.slot.selected { background: #c61e6b; color: #fff; border-color: #c61e6b; }
+
+.no-slots { color: #666; font-style: italic; }
+
+select {
+  border:1px solid #ffc1d5;
+  background:#fff;
+  border-radius:8px;
+  padding:10px 12px;
+  font-size:15px;
+  outline:none;
+}
+select:focus {
+  border-color:#ff4f9a; box-shadow:0 0 0 3px #ffe9f1;
+}

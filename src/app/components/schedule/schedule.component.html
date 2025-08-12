@@ -1,56 +1,105 @@
 <section class="sched">
-    <h2>Umów wizytę</h2>
-  
-    <form [formGroup]="form" (ngSubmit)="submit()" class="form">
-      <div class="row">
-        <label>Usługa</label>
-        <input type="text" formControlName="serviceText" placeholder="Np. Manicure hybrydowy" />
-        @if (hasErr('serviceText','required')) { <small class="err">To pole jest wymagane</small> }
-        @if (hasErr('serviceText','minlength')) { <small class="err">Min. 2 znaki</small> }
-      </div>
-  
-      <div class="grid">
-        <div class="row">
-          <label>Data</label>
-          <input type="date" formControlName="date" />
-          @if (hasErr('date','required')) { <small class="err">Podaj datę</small> }
-        </div>
-        <div class="row">
-          <label>Godzina</label>
-          <input type="time" formControlName="time" />
-          @if (hasErr('time','required')) { <small class="err">Podaj godzinę</small> }
-        </div>
-      </div>
-  
-      <div class="row">
-        <label>Imię i nazwisko</label>
-        <input type="text" formControlName="name" placeholder="Np. Anna Kowalska" />
-        @if (hasErr('name','required')) { <small class="err">To pole jest wymagane</small> }
-        @if (hasErr('name','minlength')) { <small class="err">Min. 2 znaki</small> }
-      </div>
-  
-      <div class="row">
-        <label>Uwagi (opcjonalnie)</label>
-        <textarea rows="3" formControlName="notes" placeholder="Dodatkowe informacje…"></textarea>
-      </div>
-  
-      <button class="btn" type="submit" [disabled]="submitting || form.invalid">
-        @if (!submitting) { Zarezerwuj termin } @else { Zapisywanie… }
-      </button>
-  
-      @if (successMsg) { <div class="alert success">{{ successMsg }}</div> }
-      @if (errorMsg) { <div class="alert error">{{ errorMsg }}</div> }
-    </form>
-  
-    @if (todays.length) {
-      <div class="preview">
-        <h3>Dzisiejsze rezerwacje ({{ form.get('date')?.value }})</h3>
-        <ul>
-          @for (a of todays; track a.id) {
-            <li><strong>{{ a.time }}</strong> — {{ a.serviceText }} ({{ a.name }})</li>
-          }
-        </ul>
+  <h2>Umów wizytę</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+    <!-- USŁUGA -->
+    <div class="row">
+      <label>Usługa</label>
+      <select [formControl]="form.controls.service">
+        <option [ngValue]="null" disabled>Wybierz usługę…</option>
+
+        @for (cat of categories; track cat) {
+          <optgroup [label]="cat">
+            @for (s of byCategory(cat); track s.name) {
+              <option [ngValue]="s">{{ s.name }}</option>
+            }
+          </optgroup>
+        }
+      </select>
+      @if (hasErr('service','required')) { <small class="err">Wybierz usługę</small> }
+    </div>
+
+    <!-- Nazwa usługi jako tekst (auto-uzupełniane, można doprecyzować) -->
+    <!-- <div class="row">
+      <label>Nazwa usługi (możesz doprecyzować)</label>
+      <input type="text" formControlName="serviceText" placeholder="Np. Manicure hybrydowy + zdobienia" />
+      @if (hasErr('serviceText','required')) { <small class="err">To pole jest wymagane</small> }
+    </div> -->
+
+    <!-- META wybranej usługi -->
+    @let svc = form.controls.service.value;
+    @if (svc) {
+      <div class="service-meta">
+        @if (svc.description) { <div><span class="desc">{{ svc.description }}</span></div> }
+        <span class="chip">⏱ {{ svc.time }} min </span>
+        <span class="chip">💸 {{ svc.price }} zł</span>
+        
       </div>
     }
-  </section>
-  
+
+    <!-- CZAS TRWANIA + DATA -->
+    <div class="grid">
+      <div class="row">
+        <label>Data</label>
+        <input type="date" formControlName="date" />
+        @if (hasErr('date','required')) { <small class="err">Podaj datę</small> }
+      </div>
+    </div>
+
+    <!-- DOSTĘPNE GODZINY (kafelki) -->
+    @if (form.get('date')?.value) {
+      <div class="row">
+        <label>Dostępne godziny</label>
+        <div class="slots">
+          @for (t of availableSlots(); track t) {
+            <button
+              type="button"
+              class="slot"
+              [class.selected]="form.value.time === t"
+              (click)="pickSlot(t)">
+              {{ t }}
+            </button>
+          }
+          @if (!availableSlots().length) {
+            <div class="no-slots">Brak wolnych terminów w tym dniu.</div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- DANE KLIENTA -->
+    <div class="row">
+      <label>Imię i nazwisko</label>
+      <input type="text" formControlName="name" placeholder="Np. Anna Kowalska" />
+      @if (hasErr('name','required')) { <small class="err">To pole jest wymagane</small> }
+      @if (hasErr('name','minlength')) { <small class="err">Min. 2 znaki</small> }
+    </div>
+
+    <div class="row">
+      <label>Uwagi (opcjonalnie)</label>
+      <textarea rows="3" formControlName="notes" placeholder="Dodatkowe informacje…"></textarea>
+    </div>
+
+    <!-- AKCJA -->
+    <button class="btn" type="submit" [disabled]="submitting || form.invalid || !form.value.time">
+      @if (!submitting) { Zarezerwuj termin } @else { Zapisywanie… }
+    </button>
+
+    @if (successMsg) { <div class="alert success">{{ successMsg }}</div> }
+    @if (errorMsg) { <div class="alert error">{{ errorMsg }}</div> }
+  </form>
+
+  <!-- PODGLĄD DNIA -->
+  @if (todays.length) {
+    <div class="preview">
+      <h3>Rezerwacje w dniu {{ form.get('date')?.value }}</h3>
+      <ul>
+        @for (a of todays; track a.id) {
+          <li>
+            <strong>{{ a.time }}</strong> — {{ a.serviceText }} ({{ a.name }}) · {{ a.duration }} min
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</section>

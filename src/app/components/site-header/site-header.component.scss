@@ -1,16 +1,28 @@
 .site-header {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 1rem;
-  background-color: #c56e88; // pinkish palette background
+  padding: 4px 1rem 0 1rem;
+  background-color: #c56e88;
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; // space between welcome text and button/link
 }
 
 .logo-icon {
   height: 60px;
+  cursor: pointer;
 }
 
 .welcome-text {
+  font-size: 0.9rem;
   margin-right: 1rem;
   font-weight: 500;
 }

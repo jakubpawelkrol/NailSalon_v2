@@ -11,14 +11,36 @@ export class RestService {
   private _photos = signal<PhotoModel[]>([]);
   readonly photos = this._photos.asReadonly();
 
+  private baseUrl = '/api';
+  private helloText = 'aaa';
+
   getGalleryPhotos(): void {
-    this.http.get<PhotoModel[]>('http://localhost:3000/api/gallery').subscribe({
+    //this.http.get<PhotoModel[]>('http://localhost:3000/api/gallery').subscribe({
+    this.http.get<PhotoModel[]>(`${this.baseUrl}/gallery`).subscribe({
       next: (data) => {
         this._photos.set(data);
         // console.log('Loaded images:', data);
       },
       error: (err) => {
         console.error('Failed to load images:', err);
+      },
+    });
+  }
+
+  getHello(): Observable<string> {
+    return this.http.get(`${this.baseUrl}/hello`, {
+      responseType: 'text',
+    });
+  }
+
+  hello() {
+    this.getHello().subscribe({
+      next: (data) => {
+        this.helloText = data;
+        console.log('Hello text: ', this.helloText);
+      },
+      error: (err) => {
+        console.error('Failed to load hello text:', err);
       },
     });
   }

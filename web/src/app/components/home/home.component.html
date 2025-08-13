@@ -1,0 +1,11 @@
+<div class="home-container">
+  @if (isLoggedIn()) {
+  <button routerLink="/schedule">Umów wizytę</button>
+  <button routerLink="/admin">Kalendarz</button>
+  }
+  <button routerLink="/services">Usługi</button>
+  <button routerLink="/about">O mnie</button>
+  <button routerLink="/gallery">Galeria</button>
+  <button routerLink="/contact">Kontakt</button>
+  <button (click)="helloWorld()">Hello world</button>
+</div>

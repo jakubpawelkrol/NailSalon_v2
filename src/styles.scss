@@ -4,15 +4,40 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-  
-  html, body {
-    height: 100%;
-    background-color: #ffc0cb; // your prototype pink
-    font-family: sans-serif;
-  }
+}
 
-  button {
-    border-radius: 12px;
-    transition: all 0.2s ease-in-out;
-  }
+:root {
+    --pink-50: #ffe4ec;   /* Lightest pink (backgrounds) */
+    --pink-100: #ffc1d5;  /* Light pink (borders) */
+    --pink-200: #ff9fc0;  /* Medium light pink (hover states) */
+    --pink-300: #ff4f9a;  /* Bright pink (accents) */
+    --pink-400: #c61e6b;  /* Dark pink (headings) */
+    --pink-500: #a51555;  /* Darker pink (active states) */
+
+    --gray-50: #f8f8f8;   /* Lightest gray (backgrounds) */
+    --gray-100: #e5e5e5;  /* Light gray (borders) */
+    --gray-200: #999999;  /* Medium gray (disabled text) */
+    --gray-300: #4b4b4b;  /* Dark gray (body text) */
+}
+
+html, body {
+    height: 100%;
+    background-color: #ffc0cb; // prototype pink
+    font-family: sans-serif;
+    min-height: 100vh;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+app-site-header, app-footer {
+  flex-shrink: 0;
+}
+
+button {
+  border-radius: 12px;
+  transition: all 0.2s ease-in-out;
+}

@@ -3,14 +3,14 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { MockAuthService } from '../../services/common/mock-auth.service';
+import { MockAuthService } from '../../../services/common/mock-auth.service';
 
 @Component({
   standalone: true,
   selector: 'app-signup',
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './signup.component.html',
-  styleUrl: './signup.component.scss',
+  styleUrl: '../auth.shared.scss'
 })
 export class SignupComponent {
   private fb = inject(FormBuilder);

@@ -1,8 +1,12 @@
 <div class="home-container">
     <button routerLink="/services">Usługi</button>
-    <button routerLink="/schedule">Umów wizytę</button>
+    @if (isLoggedIn()) {
+        <button routerLink="/schedule">Umów wizytę</button>
+    }
     <button routerLink="/about">O mnie</button>
     <button routerLink="/gallery">Galeria</button>
-    <button routerLink="/admin">Kalendarz</button>
+    @if (isLoggedIn()) {
+        <button routerLink="/admin">Kalendarz</button>
+    }
     <button routerLink="/contact">Kontakt</button>
 </div>

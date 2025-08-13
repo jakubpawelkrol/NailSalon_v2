@@ -7,6 +7,7 @@ import { Appointment } from '../../models/appointment.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs/operators';
 import { SERVICES, ServiceItem, ServiceCategory } from '../../models/services.model';
+import { MockAuthService } from '../../services/common/mock-auth.service';
 
 const SLOT_MIN = 10;
 const BUFFER_MIN = 10;
@@ -26,6 +27,7 @@ function overlaps(a1: number, a2: number, b1: number, b2: number) { return a1 < 
 export class ScheduleComponent {
   private fb = inject(FormBuilder);
   private store = inject(AppointmentService);
+  private auth = inject(MockAuthService);
 
   // ⬇️ źródło usług
   services: ServiceItem[] = SERVICES;
@@ -58,9 +60,7 @@ export class ScheduleComponent {
   // reagujemy na zmianę usługi: ustawiamy duration + serviceText, czyścimy time
   constructor() {
     this.form.controls.date.valueChanges.subscribe(() => this.form.controls.time.setValue(''));
-
     this.form.controls.duration.valueChanges.subscribe(() => this.form.controls.time.setValue(''));
-
     this.form.controls.service.valueChanges.subscribe(svc => {
       // auto-uzupełnij pola powiązane z usługą
       if (svc) {
@@ -71,6 +71,11 @@ export class ScheduleComponent {
       }
       this.form.controls.time.setValue('');
     });
+    const user = this.auth.user?.();
+    if(user && user.name) {
+      this.form.controls.name.setValue(user.name);
+      this.form.controls.name.disable();
+    }
   }
 
   // dostępne sloty – jak w poprzedniej poprawionej wersji
@@ -134,6 +139,10 @@ export class ScheduleComponent {
 
   byCategory(cat: ServiceCategory) {
     return this.services.filter(s => s.category === cat);
+  }
+
+  isLoggedIn() {
+    return this.auth.isLoggedIn();
   }
 
   submitting = false;

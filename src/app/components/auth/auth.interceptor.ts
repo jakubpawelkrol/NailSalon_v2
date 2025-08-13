@@ -1,6 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { MockAuthService } from './services/common/mock-auth.service';
+import { MockAuthService } from '../../services/common/mock-auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(MockAuthService);

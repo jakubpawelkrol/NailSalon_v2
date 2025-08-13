@@ -76,7 +76,7 @@
     <!-- DANE KLIENTA -->
     <div class="row">
       <label>Imię i nazwisko</label>
-      <input type="text" formControlName="name" placeholder="Np. Anna Kowalska" />
+      <input type="text" formControlName="name" placeholder="Np. Anna Kowalska" [readonly]="isLoggedIn()" />
       @if (hasErr('name','required')) { <small class="err">To pole jest wymagane</small> }
       @if (hasErr('name','minlength')) { <small class="err">Min. 2 znaki</small> }
     </div>

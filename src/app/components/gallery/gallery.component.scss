@@ -1,74 +1,7 @@
-// .gallery-grid {
-//   display: grid;
-//   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-//   gap: 15px;
-// }
-
-// .thumbnail {
-//   width: 100%;
-//   cursor: pointer;
-//   border-radius: 10px;
-//   transition: transform 0.2s ease;
-//   box-shadow: 0 0 6px rgba(0,0,0,0.1);
-// }
-// .thumbnail:hover {
-//   transform: scale(1.03);
-// }
-
-// .lightbox {
-//   position: fixed;
-//   inset: 0;
-//   background: rgba(0, 0, 0, 0.8);
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-//   z-index: 1000;
-// }
-
-// .full-image {
-//   max-width: 90vw;
-//   max-height: 90vh;
-//   border-radius: 10px;
-//   box-shadow: 0 0 20px black;
-// }
-
-// .close-btn {
-//   position: absolute;
-//   top: 20px;
-//   right: 30px;
-//   font-size: 3rem;
-//   background: none;
-//   border: none;
-//   color: white;
-//   cursor: pointer;
-// }
-
-// .nav-btn {
-//   position: absolute;
-//   top: 50%;
-//   transform: translateY(-50%);
-//   font-size: 3rem;
-//   color: white;
-//   background: none;
-//   border: none;
-//   cursor: pointer;
-//   z-index: 1001;
-//   user-select: none;
-//   padding: 0 15px;
-//   transition: opacity 0.2s ease;
-// }
-
-// .nav-btn:hover {
-//   opacity: 0.7;
-// }
-
-// .nav-btn.prev {
-//   left: 20px;
-// }
-
-// .nav-btn.next {
-//   right: 20px;
-// }
+:host {
+  display: block;
+  width: 100%;
+}
 
 .gallery-grid {
   display: grid;

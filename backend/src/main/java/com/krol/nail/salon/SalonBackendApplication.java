@@ -1,4 +1,4 @@
-package com.krol.paz.salon_backend;
+package com.krol.nail.salon;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

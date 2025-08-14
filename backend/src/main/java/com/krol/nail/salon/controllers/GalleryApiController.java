@@ -1,4 +1,4 @@
-package com.krol.paz.salon_backend.controllers;
+package com.krol.nail.salon.controllers;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;

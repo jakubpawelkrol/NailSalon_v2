@@ -17,19 +17,13 @@ import java.util.List;
 @Configuration
 public class BeanConfiguration {
 
-    private final UserService userService;
-
-    public BeanConfiguration(UserService userService) {
-        this.userService = userService;
-    }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
+    public DaoAuthenticationProvider authenticationProvider(UserService userService) {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(userService);
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;

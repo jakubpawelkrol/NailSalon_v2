@@ -30,3 +30,9 @@ spring:
     console:
       enabled: true
       path: /h2-console
+      settings:
+        web-allow-others: true
+
+jwt:
+  secret: myVeryLongSecretKeyThatIsAtLeast32CharactersLongForSecurityPurposes
+  expiration: 86400000 # 24 hours in milliseconds

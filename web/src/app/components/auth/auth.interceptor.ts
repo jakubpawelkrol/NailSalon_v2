@@ -1,13 +1,33 @@
-import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { MockAuthService } from '../../services/common/mock-auth.service';
+import { inject, Injectable } from '@angular/core';
+import { AuthService } from '../../services/common/auth.service';
+import {
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+} from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(MockAuthService);
-  const session = localStorage.getItem('dev_session');
-  const token = session ? (JSON.parse(session).accessToken as string) : null;
-  if (token) {
-    req = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
+  private authService = inject(AuthService);
+
+  intercept(
+    req: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
+    const token = this.authService.getToken();
+    if (token) {
+      req = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+    }
+    return next.handle(req).pipe(
+      catchError((error) => {
+        if (error.status === 401) {
+          this.authService.logout();
+        }
+        return throwError(() => new Error(error.message));
+      })
+    );
   }
-  return next(req);
-};
+}

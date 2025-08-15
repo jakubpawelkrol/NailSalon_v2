@@ -1,21 +1,22 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MockAuthService } from '../../services/common/mock-auth.service';
+import { AuthService } from '../../services/common/auth.service';
+import { map } from 'rxjs/operators';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-site-header',
-  imports: [RouterLink],
+  imports: [RouterLink, AsyncPipe],
   templateUrl: './site-header.component.html',
-  styleUrl: './site-header.component.scss'
+  styleUrl: './site-header.component.scss',
 })
 export class SiteHeaderComponent {
-  auth = inject(MockAuthService);
+  auth = inject(AuthService);
 
-  // Computed to format greeting text
-  greeting = computed(() => {
-    const user = this.auth.user()?.name;
-    return user ? `Witaj ${user}` : null;
-  });
+  // Observable to format greeting text
+  greeting$ = this.auth
+    .getUser()
+    .pipe(map((user) => (user ? `Witaj ${user.firstName}` : null)));
 
   logout() {
     this.auth.logout();

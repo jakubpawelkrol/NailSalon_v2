@@ -6,6 +6,7 @@ import com.krol.nail.salon.dtos.UserRequest;
 import com.krol.nail.salon.entities.User;
 import com.krol.nail.salon.services.UserService;
 import com.krol.nail.salon.services.jwt.JwtUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +22,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@Slf4j
 public class AuthenticatonController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
@@ -35,14 +37,17 @@ public class AuthenticatonController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
+            log.info("Login Request: {}", loginRequest);
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
             );
+            log.info("Authentication Successful");
             User user = userService.findByEmail(loginRequest.email());
             Map<String, Object> response = generateResponse(user, loginRequest);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.info("Authentication Failed, message: {}", e.getMessage());
             return ResponseEntity.badRequest().body("Invalid credentials!\n"+ e.getMessage());
         }
     }
@@ -50,16 +55,19 @@ public class AuthenticatonController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest) {
         try {
+            log.info("Signup Request: {}", signupRequest);
             User user = userService.createUser(
                     signupRequest.email(),
                     signupRequest.password(),
                     signupRequest.firstName(),
                     signupRequest.lastName()
             );
+            log.info("User Created: {}", user);
             Map<String, Object> response = generateResponse(user, signupRequest);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.info("Signup Failed, message: {}", e.getMessage());
             return ResponseEntity.badRequest().body("Error creating user!\n"+ e.getMessage());
         }
     }
@@ -74,7 +82,7 @@ public class AuthenticatonController {
                 "email", user.getEmail(),
                 "firstName", user.getFirstName(),
                 "lastName", user.getLastName(),
-                "roles", user.getRoles()
+                "roles", user.getRole()
         ));
         return response;
     }

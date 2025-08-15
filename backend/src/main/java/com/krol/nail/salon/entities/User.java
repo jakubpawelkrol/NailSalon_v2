@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -37,7 +38,7 @@ public class User implements UserDetails {
     private String lastName;
 
     @Enumerated(EnumType.STRING)
-    private List<Role> roles = List.of(Role.USER);
+    private Role role = Role.USER;
 
     @Column(nullable = false)
     private boolean enabled = false;
@@ -50,12 +51,12 @@ public class User implements UserDetails {
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.roles = List.of(Role.USER);
+        this.enabled = true;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(roles.stream().map(role -> "ROLE_" + role.name()).toArray(GrantedAuthority[]::new));
+        return List.of(new SimpleGrantedAuthority("ROLE_" +  this.role.name()));
     }
 
     @Override

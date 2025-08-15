@@ -28,7 +28,7 @@ export class RestService {
   }
 
   getHello(): Observable<string> {
-    return this.http.get(`${this.baseUrl}/hello`, {
+    return this.http.get(`${this.baseUrl}/auth/hello`, {
       responseType: 'text',
     });
   }

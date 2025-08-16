@@ -104,7 +104,9 @@ export class ScheduleComponent {
     });
     if (this.auth.isLoggedIn()) {
       this.form.controls.name.setValue(
-        this.currentUser?.firstName + ' ' + this.currentUser?.lastName
+    if (this.auth.isLoggedIn() && this.currentUser && this.currentUser.firstName && this.currentUser.lastName) {
+      this.form.controls.name.setValue(
+        this.currentUser.firstName + ' ' + this.currentUser.lastName
       );
       this.form.controls.name.disable();
     }

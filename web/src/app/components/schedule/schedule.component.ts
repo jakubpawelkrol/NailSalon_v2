@@ -62,7 +62,14 @@ export class ScheduleComponent {
   ngOnInit() {
     this.userSubscription = this.auth.getUser().subscribe((user) => {
       this.currentUser = user;
+      this.updateUserNameField(user);
     });
+
+    // Also initialize on load if user is already logged in
+    if (this.auth.isLoggedIn()) {
+      const user = this.auth.getStoredUser();
+      this.updateUserNameField(user);
+    }
   }
 
   ngOnDestroy() {
@@ -102,9 +109,12 @@ export class ScheduleComponent {
       }
       this.form.controls.time.setValue('');
     });
-    if (this.auth.isLoggedIn()) {
-      this.form.controls.name.setValue(
-    if (this.auth.isLoggedIn() && this.currentUser && this.currentUser.firstName && this.currentUser.lastName) {
+    if (
+      this.auth.isLoggedIn() &&
+      this.currentUser &&
+      this.currentUser.firstName &&
+      this.currentUser.lastName
+    ) {
       this.form.controls.name.setValue(
         this.currentUser.firstName + ' ' + this.currentUser.lastName
       );
@@ -193,5 +203,15 @@ export class ScheduleComponent {
   get todays() {
     const d = this.form.controls.date.value as string | null;
     return d ? this.store.byDate(d) : [];
+  }
+
+  private updateUserNameField(user: User | null) {
+    if (user && user.firstName && user.lastName) {
+      this.form.controls.name.setValue(`${user.firstName} ${user.lastName}`);
+      this.form.controls.name.disable();
+    } else {
+      this.form.controls.name.enable();
+      this.form.controls.name.setValue('');
+    }
   }
 }

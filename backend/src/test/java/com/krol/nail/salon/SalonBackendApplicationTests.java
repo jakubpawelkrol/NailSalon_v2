@@ -1,4 +1,4 @@
-package com.krol.paz.salon_backend;
+package com.krol.nail.salon;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

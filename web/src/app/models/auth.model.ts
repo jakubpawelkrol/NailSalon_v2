@@ -1,19 +1,23 @@
 export interface User {
-    id: string;
-    email: string;
-    name: string;
-  }
-  
-  export interface AuthResult {
-    user: User;
-    accessToken: string;   // mock for now
-  }
-  
-  export abstract class AuthFacade {
-    abstract user(): User | null;        // current user (sync)
-    abstract isLoggedIn(): boolean;
-    abstract login(email: string, password: string): Promise<AuthResult>;
-    abstract signup(name: string, email: string, password: string): Promise<AuthResult>;
-    abstract logout(): void;
-    // optional: refresh(): Promise<void>;
-  }
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: 'USER' | 'ADMIN';
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}

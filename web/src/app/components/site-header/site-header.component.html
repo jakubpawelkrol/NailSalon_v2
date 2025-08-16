@@ -4,10 +4,10 @@
   </div>
   <div class="auth-section">
     @if (auth.isLoggedIn()) {
-      <span class="welcome-text">{{ greeting() }}</span>
-      <button (click)="logout()">Wyloguj</button>
+    <span class="welcome-text">{{ greeting$ | async }}</span>
+    <button (click)="logout()">Wyloguj</button>
     } @else {
-      <a routerLink="/login" class="login-link">Zaloguj</a>
+    <a routerLink="/login" class="login-link">Zaloguj</a>
     }
   </div>
 </header>

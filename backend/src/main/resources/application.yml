@@ -34,5 +34,5 @@ spring:
         web-allow-others: true
 
 jwt:
-  secret: myVeryLongSecretKeyThatIsAtLeast32CharactersLongForSecurityPurposes
+  secret: ${JWT_SECRET}
   expiration: 86400000 # 24 hours in milliseconds

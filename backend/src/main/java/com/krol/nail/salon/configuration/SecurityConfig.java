@@ -47,7 +47,19 @@ public class SecurityConfig {
                 .headers(header -> header
                     .frameOptions(frameOptionsConfig -> {
                         frameOptionsConfig.sameOrigin().disable();
-                    }))
+                .headers(header -> {
+                    // Only disable frame options in 'dev' profile for H2 console
+                    boolean isDev = false;
+                    for (String profile : environment.getActiveProfiles()) {
+                        if ("dev".equals(profile)) {
+                            isDev = true;
+                            break;
+                        }
+                    }
+                    if (isDev) {
+                        header.frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin().disable());
+                    }
+                })
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

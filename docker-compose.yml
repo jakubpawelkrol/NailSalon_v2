@@ -18,6 +18,8 @@ services:
   backend:
     build: ./backend
     container_name: spring-backend
+    env_file:
+      - ./backend/.env # Add this line
     environment:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
@@ -25,6 +27,8 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+    volumes:
+      - ./gallery:/opt/app/images
     networks:
       - app-network
 

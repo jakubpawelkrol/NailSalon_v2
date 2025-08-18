@@ -1,11 +1,11 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppointmentService } from '../../services/common/appointment.service';
 import { v4 as uuid } from 'uuid';
 import { CommonModule } from '@angular/common';
 import { Appointment } from '../../models/appointment.model';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { startWith } from 'rxjs/operators';
+import { map, startWith } from 'rxjs/operators';
 import {
   SERVICES,
   ServiceItem,
@@ -39,15 +39,18 @@ function overlaps(a1: number, a2: number, b1: number, b2: number) {
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
 })
-export class ScheduleComponent {
+export class ScheduleComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private store = inject(AppointmentService);
   private auth = inject(AuthService);
 
-  currentUser: User | null = null;
-  private userSubscription?: Subscription;
+  // currentUser: User | null = null;
+  // private userSubscription?: Subscription;
+  client$: string | null = null;
   services: ServiceItem[] = SERVICES;
   categories = Array.from(new Set(this.services.map((s) => s.category)));
+
+  private userSubscription?: Subscription;
 
   form = this.fb.group({
     service: this.fb.control<ServiceItem | null>(null, Validators.required),
@@ -60,20 +63,42 @@ export class ScheduleComponent {
   });
 
   ngOnInit() {
-    this.userSubscription = this.auth.getUser().subscribe((user) => {
-      this.currentUser = user;
-      this.updateUserNameField(user);
-    });
-
-    // Also initialize on load if user is already logged in
-    if (this.auth.isLoggedIn()) {
-      const user = this.auth.getStoredUser();
-      this.updateUserNameField(user);
-    }
+    // Handle user data here - this is the right place
+    this.setupUserData();
   }
 
   ngOnDestroy() {
     this.userSubscription?.unsubscribe();
+  }
+
+  private setupFormSubscriptions() {
+    this.form.controls.date.valueChanges.subscribe(() =>
+      this.form.controls.time.setValue('')
+    );
+    this.form.controls.duration.valueChanges.subscribe(() =>
+      this.form.controls.time.setValue('')
+    );
+    this.form.controls.service.valueChanges.subscribe((svc) => {
+      if (svc) {
+        this.form.controls.duration.setValue(svc.time, { emitEvent: true });
+        this.form.controls.serviceText.setValue(svc.name, { emitEvent: false });
+      } else {
+        this.form.controls.serviceText.setValue('', { emitEvent: false });
+      }
+      this.form.controls.time.setValue('');
+    });
+  }
+  private setupUserData() {
+    // Check if user is already logged in (synchronous check)
+    if (this.auth.isLoggedIn()) {
+      const user = this.auth.getStoredUser();
+      this.updateUserNameField(user);
+    }
+
+    // Subscribe to user changes (for login/logout during component lifetime)
+    this.userSubscription = this.auth.getUser().subscribe((user) => {
+      this.updateUserNameField(user);
+    });
   }
 
   // sygnały z daty i czasu trwania (dla przeliczeń slotów)
@@ -93,6 +118,7 @@ export class ScheduleComponent {
 
   // reagujemy na zmianę usługi: ustawiamy duration + serviceText, czyścimy time
   constructor() {
+    this.setupFormSubscriptions();
     this.form.controls.date.valueChanges.subscribe(() =>
       this.form.controls.time.setValue('')
     );
@@ -109,16 +135,14 @@ export class ScheduleComponent {
       }
       this.form.controls.time.setValue('');
     });
-    if (
-      this.auth.isLoggedIn() &&
-      this.currentUser &&
-      this.currentUser.firstName &&
-      this.currentUser.lastName
-    ) {
-      this.form.controls.name.setValue(
-        this.currentUser.firstName + ' ' + this.currentUser.lastName
+
+    if (this.auth.isLoggedIn()) {
+      this.auth.getUser().pipe(
+        map((user) => {
+          this.client$ = user ? `${user.firstName} ${user.lastName}` : null;
+        })
       );
-      this.form.controls.name.disable();
+      this.form.controls.name.setValue(this.client$ || '');
     }
   }
 

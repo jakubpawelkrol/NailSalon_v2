@@ -9,36 +9,56 @@
         <option [ngValue]="null" disabled>Wybierz usługę…</option>
 
         @for (cat of categories; track cat) {
-          <optgroup [label]="cat">
-            @for (s of byCategory(cat); track s.name) {
-              <option [ngValue]="s">{{ s.name }}</option>
-            }
-          </optgroup>
+        <optgroup [label]="cat">
+          @for (s of byCategory(cat); track s.name) {
+          <option [ngValue]="s">{{ s.name }}</option>
+          }
+        </optgroup>
         }
       </select>
-      @if (hasErr('service','required')) { <small class="err">Wybierz usługę</small> }
+      @if (hasErr('service','required')) {
+      <small class="err">Wybierz usługę</small> }
     </div>
 
     <!-- META wybranej usługi -->
-    @let svc = form.controls.service.value;
-    @if (svc) {
-      <div class="service-meta">
-        @if (svc.description) { <span class="desc">{{ svc.description }}</span> }
-        <span class="chip">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-          </svg> 
-           {{ svc.time }} min 
-        </span>
-        <span class="chip">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="1" x2="12" y2="23"/>
-          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-          </svg> 
-           {{ svc.price }} zł
-        </span>
-      </div>
+    @let svc = form.controls.service.value; @if (svc) {
+    <div class="service-meta">
+      @if (svc.description) { <span class="desc">{{ svc.description }}</span> }
+      <span class="chip">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        {{ svc.time }} min
+      </span>
+      <span class="chip">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+        </svg>
+        {{ svc.price }} zł
+      </span>
+    </div>
     }
 
     <!-- CZAS TRWANIA + DATA -->
@@ -46,66 +66,90 @@
       <div class="row date-row">
         <label>Data</label>
         <div class="date-input">
-          <input type="date" lang="pl-PL" formControlName="date" aria-label="wybierz datę" />
+          <input
+            type="date"
+            lang="pl-PL"
+            formControlName="date"
+            aria-label="wybierz datę"
+          />
         </div>
-        @if (hasErr('date','required')) { <small class="err">Podaj datę</small> }
+        @if (hasErr('date','required')) {
+        <small class="err">Podaj datę</small> }
       </div>
     </div>
 
     <!-- DOSTĘPNE GODZINY (kafelki) -->
     @if (form.get('date')?.value) {
-      <div class="row">
-        <label>Dostępne godziny</label>
-        <div class="slots">
-          @for (t of availableSlots(); track t) {
-            <button
-              type="button"
-              class="slot"
-              [class.selected]="form.value.time === t"
-              (click)="pickSlot(t)">
-              {{ t }}
-            </button>
-          }
-          @if (!availableSlots().length) {
-            <div class="no-slots">Brak wolnych terminów w tym dniu.</div>
-          }
-        </div>
+    <div class="row">
+      <label>Dostępne godziny</label>
+      <div class="slots">
+        @for (t of availableSlots(); track t) {
+        <button
+          type="button"
+          class="slot"
+          [class.selected]="form.value.time === t"
+          (click)="pickSlot(t)"
+        >
+          {{ t }}
+        </button>
+        } @if (!availableSlots().length) {
+        <div class="no-slots">Brak wolnych terminów w tym dniu.</div>
+        }
       </div>
+    </div>
     }
 
     <!-- DANE KLIENTA -->
     <div class="row">
       <label>Imię i nazwisko</label>
-      <input type="text" formControlName="name" placeholder="Np. Anna Kowalska" [readonly]="isLoggedIn()" />
-      @if (hasErr('name','required')) { <small class="err">To pole jest wymagane</small> }
-      @if (hasErr('name','minlength')) { <small class="err">Min. 2 znaki</small> }
+      <input
+        type="text"
+        formControlName="name"
+        placeholder="Np. Anna Kowalska"
+        [readonly]="isLoggedIn()"
+      />
+      @if (hasErr('name','required')) {
+      <small class="err">To pole jest wymagane</small> } @if
+      (hasErr('name','minlength')) { <small class="err">Min. 2 znaki</small> }
     </div>
 
     <div class="row">
       <label>Uwagi (opcjonalnie)</label>
-      <textarea rows="3" formControlName="notes" placeholder="Dodatkowe informacje…"></textarea>
+      <textarea
+        rows="3"
+        formControlName="notes"
+        placeholder="Dodatkowe informacje…"
+      ></textarea>
     </div>
 
     <!-- AKCJA -->
-    <button class="btn" type="submit" [disabled]="submitting || form.invalid || !form.value.time">
+    <button
+      class="btn"
+      type="submit"
+      [disabled]="submitting || form.invalid || !form.value.time"
+    >
       @if (!submitting) { Zarezerwuj termin } @else { Zapisywanie… }
     </button>
 
-    @if (successMsg) { <div class="alert success">{{ successMsg }}</div> }
-    @if (errorMsg) { <div class="alert error">{{ errorMsg }}</div> }
+    @if (successMsg) {
+    <div class="alert success">{{ successMsg }}</div>
+    } @if (errorMsg) {
+    <div class="alert error">{{ errorMsg }}</div>
+    }
   </form>
 
   <!-- PODGLĄD DNIA -->
   @if (todays.length) {
-    <div class="preview">
-      <h3>Rezerwacje w dniu {{ form.get('date')?.value }}</h3>
-      <ul>
-        @for (a of todays; track a.id) {
-          <li>
-            <strong>{{ a.time }}</strong> — {{ a.serviceText }} ({{ a.name }}) · {{ a.duration }} min
-          </li>
-        }
-      </ul>
-    </div>
+  <div class="preview">
+    <h3>Rezerwacje w dniu {{ form.get("date")?.value }}</h3>
+    <ul>
+      @for (a of todays; track a.id) {
+      <li>
+        <strong>{{ a.time }}</strong> — {{ a.serviceText }} ({{ a.name }}) ·
+        {{ a.duration }} min
+      </li>
+      }
+    </ul>
+  </div>
   }
 </section>

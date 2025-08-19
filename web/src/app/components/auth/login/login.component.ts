@@ -1,18 +1,18 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MockAuthService } from '../../../services/common/mock-auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../services/common/auth.service';
 
 @Component({
   selector: 'app-login',
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
-  styleUrl: '../auth.shared.scss'
+  styleUrl: '../auth.shared.scss',
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
-  private auth = inject(MockAuthService);
+  private auth = inject(AuthService);
   private router = inject(Router);
 
   loading = false;
@@ -24,6 +24,7 @@ export class LoginComponent {
   });
 
   async submit() {
+    console.log('Submitting login form:', this.form.value);
     this.error = '';
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -31,17 +32,24 @@ export class LoginComponent {
     }
     this.loading = true;
     try {
-      await this.auth.login(this.form.value.email!, this.form.value.password!);
+      await this.auth.login({
+        email: this.form.value.email!,
+        password: this.form.value.password!,
+      });
       this.router.navigate(['/']);
     } catch (e: any) {
       this.error = e?.message || 'Problem z logowaniem';
     } finally {
       this.loading = false;
+      console.log('Login completed, loading: ', this.loading);
     }
+    console.log('Login form submitted:', this.form.value);
   }
 
   hasErr(ctrl: string, err?: string) {
     const c = this.form.get(ctrl);
-    return err ? !!(c?.touched && c.hasError(err)) : !!(c?.touched && c.invalid);
+    return err
+      ? !!(c?.touched && c.hasError(err))
+      : !!(c?.touched && c.invalid);
   }
 }

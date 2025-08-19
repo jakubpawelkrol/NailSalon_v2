@@ -15,11 +15,10 @@ export class RestService {
   private helloText = 'aaa';
 
   getGalleryPhotos(): void {
-    //this.http.get<PhotoModel[]>('http://localhost:3000/api/gallery').subscribe({
-    this.http.get<PhotoModel[]>(`${this.baseUrl}/gallery`).subscribe({
+    this.http.get<PhotoModel[]>(`${this.baseUrl}/images/get`).subscribe({
       next: (data) => {
         this._photos.set(data);
-        // console.log('Loaded images:', data);
+        console.log('Loaded images:', data);
       },
       error: (err) => {
         console.error('Failed to load images:', err);
@@ -28,7 +27,7 @@ export class RestService {
   }
 
   getHello(): Observable<string> {
-    return this.http.get(`${this.baseUrl}/hello`, {
+    return this.http.get(`${this.baseUrl}/auth/hello`, {
       responseType: 'text',
     });
   }

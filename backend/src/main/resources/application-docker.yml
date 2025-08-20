@@ -1,0 +1,7 @@
+# application-docker.yml (docker-specific overrides)
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${DB_NAME:salon_app}
+
+server:
+  address: 0.0.0.0 # Allow external connections in Docker

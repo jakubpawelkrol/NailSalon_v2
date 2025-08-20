@@ -15,12 +15,12 @@ spring:
   application:
     name: salon-backend
 
-# H2 Database Configuration
+  # H2 Database Configuration
   datasource:
     url: jdbc:h2:mem:nailsalondb
     driver-class-name: org.h2.Driver
     username: sa
-    password: 
+    password:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     show-sql: true
@@ -34,5 +34,5 @@ spring:
         web-allow-others: true
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:defaultSecretThatShouldBeLongerThan32Characters}
   expiration: 86400000 # 24 hours in milliseconds

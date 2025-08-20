@@ -21,8 +21,14 @@ public class GalleryApiController {
     }
 
     @GetMapping("/api/images/get")
-    public ResponseEntity<List<GalleryItem>> getGallery() throws IOException {
-        return ResponseEntity.ok(galleryService.list());
+    public ResponseEntity<?> getGallery() throws IOException {
+        List<GalleryItem> resultList = null;
+        try {
+            resultList = galleryService.list();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error while fetching gallery: " + e.getMessage());
+        }
+        return ResponseEntity.ok(resultList);
     }
 
     @GetMapping("/api/auth/hello")

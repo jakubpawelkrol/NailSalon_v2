@@ -1,0 +1,23 @@
+# application-dev.yml (development profile)
+spring:
+  datasource:
+    url: jdbc:h2:mem:nailsalondb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+logging:
+  level:
+    com.krol.nail.salon: DEBUG
+    org.springframework.security: DEBUG

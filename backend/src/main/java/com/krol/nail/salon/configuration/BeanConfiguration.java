@@ -1,5 +1,6 @@
 package com.krol.nail.salon.configuration;
 
+import com.krol.nail.salon.repositories.UserRepository;
 import com.krol.nail.salon.services.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,11 @@ public class BeanConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public UserService userService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        return new UserService(userRepository, passwordEncoder);
     }
 
     @Bean

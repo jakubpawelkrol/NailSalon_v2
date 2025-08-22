@@ -29,7 +29,7 @@ export class AuthService {
     if (user && this.hasAuthCookie()) {
       this.currentUserSubject.next(user);
     } else {
-      this.logout();
+      this.currentUserSubject.next(null);
     }
   }
 
@@ -90,8 +90,10 @@ export class AuthService {
     const userCookie = this.getCookie('userInfo');
     if (userCookie) {
       try {
+        console.log('User cookie found:', userCookie);
         return JSON.parse(decodeURIComponent(userCookie));
       } catch {
+        console.error("Failed to parse user cookie");
         return null;
       }
     }

@@ -13,10 +13,15 @@ import { AsyncPipe } from '@angular/common';
 export class SiteHeaderComponent {
   auth = inject(AuthService);
 
-  // Observable to format greeting text
-  greeting$ = this.auth
-    .getUser()
-    .pipe(map((user) => (user ? `Witaj ${user.firstName}` : null)));
+  user$ = this.auth.getUser();
+  
+  greeting$ = this.user$.pipe(
+    map((user) => (user ? `Witaj ${user.firstName}` : null))
+  );
+
+  isLoggedIn$ = this.user$.pipe(
+    map((user) => !!user)
+  );
 
   logout() {
     this.auth.logout();

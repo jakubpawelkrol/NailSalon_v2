@@ -11,4 +11,8 @@
   <button routerLink="/contact">Kontakt</button>
   <button (click)="helloWorld()">Hello world</button>
   <button (click)="printUserCookie()">Print user cookie</button>
+  <span class="inline-container">
+    <input #cookieNameInput type="text" placeholder="Cookie name" />
+    <button (click)="printCookie(cookieNameInput.value)">Print cookie</button>
+  </span>
 </div>

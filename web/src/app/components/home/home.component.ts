@@ -29,4 +29,20 @@ export class HomeComponent {
       console.log('User cookie:', user);
     });
   }
+
+  printCookie(name: string) {
+    const temp = document.cookie.split(';');
+    for (let i = 0; i < temp.length; i++) {
+      console.log("Cookie part:", temp[i]);
+    }
+    console.log("printCookie() called for ", name);
+    console.log("Cookie string: ", document.cookie);
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    console.log("Match: ", match);
+    if (match) {
+      console.log("Cookie: ", decodeURIComponent(match[2]));
+      return;
+    }
+    console.log("No cookie found with name:", name);
+  }
 }

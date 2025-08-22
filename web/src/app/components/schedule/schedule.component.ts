@@ -91,7 +91,9 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   private setupUserData() {
     // Check if user is already logged in (synchronous check)
     if (this.auth.isLoggedIn()) {
-      const user = this.auth.getStoredUser();
+      // Synchronously get the current user value if available
+      let user: User | null = null;
+      this.auth.getUser().subscribe(u => user = u).unsubscribe();
       this.updateUserNameField(user);
     }
 

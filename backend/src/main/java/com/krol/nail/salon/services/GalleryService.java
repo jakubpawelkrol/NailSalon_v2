@@ -1,6 +1,6 @@
 package com.krol.nail.salon.services;
 
-import com.krol.nail.salon.dtos.GalleryItem;
+import com.krol.nail.salon.dtos.GalleryItemDto;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Positions;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class GalleryService {
         Files.createDirectories(THUMBS);
     }
 
-    public List<GalleryItem> list() throws IOException {
+    public List<GalleryItemDto> list() throws IOException {
         try(Stream<Path> files = Files.list(ROOT)) {
             return files.filter(Files::isRegularFile)
                     .filter(this::isAllowedImage)
@@ -41,7 +41,7 @@ public class GalleryService {
         return ALLOWED.contains(name.substring(dot + 1).toLowerCase());
     }
 
-    private GalleryItem toItem(Path file) {
+    private GalleryItemDto toItem(Path file) {
         String filename = file.getFileName().toString();
         String baseName = filename.replaceAll("\\.[^.]+$", "");
 
@@ -66,6 +66,6 @@ public class GalleryService {
         String thumbnailUrl = UriComponentsBuilder.fromPath("/thumbnails/{name}.jpg")
                 .buildAndExpand(baseName).toUriString();
 
-        return new GalleryItem(imageUrl, thumbnailUrl, baseName, baseName);
+        return new GalleryItemDto(imageUrl, thumbnailUrl, baseName, baseName);
     }
 }

@@ -1,6 +1,6 @@
 package com.krol.nail.salon.controllers;
 
-import com.krol.nail.salon.dtos.GalleryItem;
+import com.krol.nail.salon.dtos.GalleryItemDto;
 import com.krol.nail.salon.services.GalleryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,7 +24,7 @@ public class GalleryApiController {
 
     @GetMapping("/get")
     public ResponseEntity<?> getGallery() throws IOException {
-        List<GalleryItem> resultList = null;
+        List<GalleryItemDto> resultList = null;
         try {
             resultList = galleryService.list();
         } catch (Exception e) {

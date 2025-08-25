@@ -2,8 +2,9 @@ package com.krol.nail.salon.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.krol.nail.salon.dtos.LoginRequest;
-import com.krol.nail.salon.dtos.SignupRequest;
+import com.krol.nail.salon.dtos.LoginRequestDto;
+import com.krol.nail.salon.dtos.SignupRequestDto;
+import com.krol.nail.salon.dtos.UserDto;
 import com.krol.nail.salon.dtos.UserRequest;
 import com.krol.nail.salon.entities.AuthAction;
 import com.krol.nail.salon.entities.User;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -41,14 +41,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequest, HttpServletResponse response) {
         try {
             log.info("Login Request: {}", loginRequest);
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
             );
             log.info("Authentication Successful");
-            User user = userService.findByEmail(loginRequest.email());
+            UserDto user = userService.findByEmail(loginRequest.email());
 
             Map<String, Object> responseBody = generateResponse(user, loginRequest, response, AuthAction.LOGIN.getAction());
 
@@ -60,10 +60,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest, HttpServletResponse response) {
+    public ResponseEntity<?> signup(@RequestBody SignupRequestDto signupRequest, HttpServletResponse response) {
         try {
             log.info("Signup Request: {}", signupRequest);
-            User user = userService.createUser(
+            UserDto user = userService.createUser(
                     signupRequest.email(),
                     signupRequest.password(),
                     signupRequest.firstName(),
@@ -103,15 +103,13 @@ public class AuthenticationController {
         return "Hello World!";
     }
 
-    private Map<String, Object> generateResponse(User user, UserRequest userRequest, HttpServletResponse response, String action) throws JsonProcessingException {
+    private Map<String, Object> generateResponse(UserDto user, UserRequest userRequest, HttpServletResponse response, String action) throws JsonProcessingException {
         UserDetails userDetails = userService.loadUserByUsername(userRequest.getEmail());
         String token = jwtUtil.generateToken(userDetails);
         Map<String, Object> userMap = Map.of(
-                "id", user.getId(),
-                "email", user.getEmail(),
-                "firstName", user.getFirstName(),
-                "lastName", user.getLastName(),
-                "role", user.getRole()
+                "email", user.email(),
+                "firstName", user.firstName(),
+                "lastName", user.lastName()
         );
         String userJson = objectMapper.writeValueAsString(userMap);
 

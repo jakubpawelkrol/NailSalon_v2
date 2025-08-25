@@ -1,5 +1,8 @@
 package com.krol.nail.salon.entities;
 
+import java.util.Objects;
+import java.util.stream.Stream;
+
 public enum AuthAction {
     LOGIN("Log in"),
     SIGNUP("Sign up"),
@@ -15,16 +18,14 @@ public enum AuthAction {
     }
 
     public String getAction() {
-        return this.action;
+        return action;
     }
 
-    public static AuthAction fromString(String action) throws IllegalAccessException {
-        for(AuthAction authAction : AuthAction.values()) {
-            if(authAction.name().equalsIgnoreCase(action)) {
-                return authAction;
-            }
-        }
-        throw new IllegalAccessException("Value " + action + " not found");
+    public static AuthAction of(String action) throws IllegalAccessException {
+        return Stream.of(AuthAction.values())
+                .filter(aa -> Objects.equals(aa.getAction(), action))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Action " + action + " could not be found."));
     }
 
 }

@@ -56,7 +56,7 @@ public class GalleryService {
 
                 try {
                     Files.setLastModifiedTime(thumbPath, Files.getLastModifiedTime(file));
-                } catch(Exception weIgnoreThis) { }
+                } catch(Exception ignored) { }
             } catch (IOException e) {
                 throw new RuntimeException("Failed to create thumbnail for " + filename, e);
             }

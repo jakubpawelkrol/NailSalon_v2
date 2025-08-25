@@ -16,10 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +25,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = {"http://localhost:4200", "http://frontend:4200"})
 @Slf4j
 public class AuthenticationController {
     private final UserService userService;
@@ -98,6 +96,11 @@ public class AuthenticationController {
         response.addCookie(userCookie);
 
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
+
+    @GetMapping("/hello")
+    public String helloworld() {
+        return "Hello World!";
     }
 
     private Map<String, Object> generateResponse(User user, UserRequest userRequest, HttpServletResponse response, String action) throws JsonProcessingException {

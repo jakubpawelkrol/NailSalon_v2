@@ -7,7 +7,6 @@ import com.krol.nail.salon.dtos.SignupRequestDto;
 import com.krol.nail.salon.dtos.UserDto;
 import com.krol.nail.salon.dtos.UserRequest;
 import com.krol.nail.salon.entities.AuthAction;
-import com.krol.nail.salon.entities.User;
 import com.krol.nail.salon.services.UserService;
 import com.krol.nail.salon.services.jwt.JwtUtil;
 import jakarta.servlet.http.Cookie;

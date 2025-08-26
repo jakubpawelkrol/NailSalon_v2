@@ -7,13 +7,13 @@ import { Appointment } from '../../models/appointment.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
 import {
-  SERVICES,
   ServiceItem,
   ServiceCategory,
 } from '../../models/services.model';
 import { AuthService } from '../../services/common/auth.service';
 import { User } from '../../models/auth.model';
 import { Subscription } from 'rxjs';
+import { ServicesService } from '../../services/common/services.service';
 
 const SLOT_MIN = 10;
 const BUFFER_MIN = 10;
@@ -43,11 +43,12 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private store = inject(AppointmentService);
   private auth = inject(AuthService);
+  private servicesService = inject(ServicesService);
 
   // currentUser: User | null = null;
   // private userSubscription?: Subscription;
   client$: string | null = null;
-  services: ServiceItem[] = SERVICES;
+  services: ServiceItem[] = this.servicesService.getServices();
   categories = Array.from(new Set(this.services.map((s) => s.category)));
 
   private userSubscription?: Subscription;
@@ -80,7 +81,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     );
     this.form.controls.service.valueChanges.subscribe((svc) => {
       if (svc) {
-        this.form.controls.duration.setValue(svc.time, { emitEvent: true });
+        this.form.controls.duration.setValue(svc.duration, { emitEvent: true });
         this.form.controls.serviceText.setValue(svc.name, { emitEvent: false });
       } else {
         this.form.controls.serviceText.setValue('', { emitEvent: false });
@@ -130,7 +131,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     this.form.controls.service.valueChanges.subscribe((svc) => {
       // auto-uzupełnij pola powiązane z usługą
       if (svc) {
-        this.form.controls.duration.setValue(svc.time, { emitEvent: true });
+        this.form.controls.duration.setValue(svc.duration, { emitEvent: true });
         this.form.controls.serviceText.setValue(svc.name, { emitEvent: false });
       } else {
         this.form.controls.serviceText.setValue('', { emitEvent: false });

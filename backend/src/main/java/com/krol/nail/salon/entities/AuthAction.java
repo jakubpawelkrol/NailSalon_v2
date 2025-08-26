@@ -1,8 +1,11 @@
 package com.krol.nail.salon.entities;
 
+import lombok.Getter;
+
 import java.util.Objects;
 import java.util.stream.Stream;
 
+@Getter
 public enum AuthAction {
     LOGIN("Log in"),
     SIGNUP("Sign up"),
@@ -15,10 +18,6 @@ public enum AuthAction {
 
     AuthAction(String action) {
         this.action = action;
-    }
-
-    public String getAction() {
-        return action;
     }
 
     public static AuthAction of(String action) throws IllegalAccessException {

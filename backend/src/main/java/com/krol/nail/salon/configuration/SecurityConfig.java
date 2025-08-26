@@ -38,29 +38,21 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(AbstractHttpConfigurer::disable)
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+//                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/images/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/images/**", "/thumbnails/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .headers(header -> {
-                    // Only disable frame options in 'dev' profile for H2 console
-                    boolean isDev = false;
                     for (String profile : environment.getActiveProfiles()) {
                         if ("dev".equals(profile)) {
-                            isDev = true;
+                            header.frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin().disable());
                             break;
                         }
-                    }
-                    if (isDev) {
-                        header.frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin().disable());
                     }
                 })
                 .authenticationProvider(authenticationProvider)

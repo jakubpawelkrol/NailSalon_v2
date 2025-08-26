@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface ServicesRepository extends JpaRepository<Services, Long> {
-    @Query("select s FROM services AS s GROUP BY s.category ORDER BY s.category ASC")
-    List<Services> getAllServicesSorted();
+    @Query("select s FROM Services s ORDER BY s.category ASC")
+    List<Services> findAllOrderedByCategory();
 }

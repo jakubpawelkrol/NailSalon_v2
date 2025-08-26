@@ -1,21 +1,37 @@
-import { Component, computed } from '@angular/core';
-import { ServiceCategory, ServiceItem, SERVICES } from '../../models/services.model';
+import { Component, computed, inject } from '@angular/core';
+import { ServiceCategory, ServiceItem } from '../../models/services.model';
+import { ServicesService } from '../../services/common/services.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-services',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './services.component.html',
   styleUrl: './services.component.scss'
 })
 export class ServicesComponent {
-  protected readonly all: ServiceItem[] = SERVICES;
+  servicesService = inject(ServicesService);
+
+  protected services = this.servicesService.services;
+  protected loading = this.servicesService.loading;
+  protected servicesByCategory = this.servicesService.servicesByCategory;
 
   protected categories = computed<ServiceCategory[]>(() => {
-    const set = new Set<ServiceCategory>(this.all.map(s => s.category));
+    const services = this.services();
+    const set = new Set<ServiceCategory>(services.map(s => s.category));
     return Array.from(set);
   });
 
-  protected byCategory(cat: ServiceCategory): ServiceItem[] {
-    return this.all.filter(s => s.category === cat);
+  ngOnInit() {
+    this.servicesService.loadServices();
   }
+
+  protected byCategory(cat: ServiceCategory): ServiceItem[] {
+    return this.services().filter(s => s.category === cat);
+  }
+  
+  protected getServicesByCategory(category: ServiceCategory): ServiceItem[] {
+    return this.servicesService.getServicesByCategory(category);
+  }
+
 }

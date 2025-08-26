@@ -1,5 +1,6 @@
 package com.krol.nail.salon.controllers;
 
+import com.krol.nail.salon.dtos.ServiceDto;
 import com.krol.nail.salon.entities.Services;
 import com.krol.nail.salon.services.ServicesService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class ServicesController {
 
     @GetMapping("/getAll")
     public ResponseEntity<?> listAllServices() {
-        List<Services> list = null;
+        List<ServiceDto> list = null;
         log.info("Reading all services");
         try {
             list = servicesService.getAllServices();

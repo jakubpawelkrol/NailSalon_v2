@@ -6,7 +6,7 @@
         <h3>{{ cat }}</h3>
   
         <div class="cards">
-          @for (s of byCategory(cat); track s.id) {
+          @for (s of byCategory(cat); track s.name) {
             <article class="card" aria-label="pozycja cennika">
               <div class="header">
                 <span class="name">
@@ -21,7 +21,7 @@
               }
   
               <div class="meta">
-                <span class="time" aria-label="czas trwania">⏱ {{ s.time }} min</span>
+                <span class="time" aria-label="czas trwania">⏱ {{ s.duration }} min</span>
               </div>
             </article>
           }

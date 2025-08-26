@@ -1,8 +1,8 @@
 package com.krol.nail.salon.services;
 
+import com.krol.nail.salon.dtos.ServiceDto;
 import com.krol.nail.salon.entities.Services;
 import com.krol.nail.salon.repositories.ServicesRepository;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +15,10 @@ public class ServicesService {
         this.servicesRepository = servicesRepository;
     }
 
-    public List<Services> getAllServices() {
-        return servicesRepository.getAllServicesSorted();
+    public List<ServiceDto> getAllServices() {
+        return servicesRepository.findAllOrderedByCategory().stream()
+                .map(s -> new ServiceDto(s.getCategory().name(), s.getName(),
+                        s.getDescription(), s.getPrice(), s.getDuration(), s.isPopular()))
+                .toList();
     }
 }

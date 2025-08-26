@@ -9,7 +9,7 @@ VALUES ('user@nailsalon.com', '$2a$10$AoESI5Snj61yezkeXPCSzOXZDszx6xWQDAZG8mBjDH
 
 -- STARTING SERVICES
 --  Manicure
-INSERT INTO services (category, name, description, price, time_minutes, popular, created_at) VALUES
+INSERT INTO services (category, name, description, price, duration, popular, created_at) VALUES
 ('Manicure', 'Manicure żelowy (przedłużanie)', 'Metoda na formie', 'od 150', 150, true, CURRENT_TIMESTAMP),
 ('Manicure', 'Manicure hybrydowy', 'Zdobienia, ombre, baby boomer', 'od 100', 90, true, CURRENT_TIMESTAMP),
 ('Manicure', 'Manicure klasyczny', 'Bez malowania lub z odżywką', '70', 60, false, CURRENT_TIMESTAMP),

@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RestService } from '../../services/common/rest-service.service';
+import { RestService } from '../../services/common/rest.service';
 import { AuthService } from '../../services/common/auth.service';
 import { map } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';

@@ -23,14 +23,17 @@ public class Services {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(columnDefinition = "Service description to show on page")
+    //@Column(columnDefinition = "Service description to show on page")
+    @Column(nullable = true)
     private String description;
 
     @Column(precision = 2, nullable = false)
+    //@Column(nullable = false)
     private double price;
 
-    @Column(precision = 1, columnDefinition = "Duration in hours", nullable = false)
-    private double duration;
+    //@Column(precision = 1, columnDefinition = "Duration in hours", nullable = false)
+    @Column(nullable = false)
+    private String duration;
 
     @Column(nullable = false)
     private boolean popular = false;

@@ -10,7 +10,6 @@ import java.util.Date;
 
 @Entity
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 @Table(name = "services")
@@ -43,5 +42,15 @@ public class Services {
 
     @Column(nullable = false)
     private Date createdAt;
+
+    public Services(String category, String name, String description, String price, double duration, boolean popular) {
+        this.category = ServiceCategory.of(category);
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.duration = duration;
+        this.popular = popular;
+        this.createdAt = new Date();
+    }
 
 }

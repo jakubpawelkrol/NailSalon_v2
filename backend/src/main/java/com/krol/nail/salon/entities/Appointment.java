@@ -27,5 +27,10 @@ public class Appointment {
     @Column(nullable = false)
     private Date creationDate;
 
+    public Appointment(Services service, User user) {
+        this.service = service;
+        this.user = user;
+        this.creationDate = new Date();
+    }
 
 }

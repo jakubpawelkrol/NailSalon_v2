@@ -1,12 +1,14 @@
 # Spring Boot Backend Dockerfile
-FROM eclipse-temurin:17-jdk-alpine as build
+FROM maven as build
 
 WORKDIR /app
 COPY pom.xml .
+RUN mvn -B dependency:go-offline
+
 COPY src ./src
 
 # Install Maven
-RUN apk add --no-cache maven
+#RUN apk add --no-cache maven
 
 RUN mvn clean package -DskipTests
 

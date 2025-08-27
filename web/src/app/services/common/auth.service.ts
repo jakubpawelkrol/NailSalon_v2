@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, tap, firstValueFrom } from 'rxjs';
 import {
   AuthResponse,
   LoginRequest,
@@ -25,12 +25,11 @@ export class AuthService {
   }
 
   private checkExistingAuth(): void {
-    const token = this.getToken();
-    const user = this.getStoredUser();
-    if (token && user && !this.isTokenExpired(token)) {
+    const user = this.getUserFromCookie();
+    if (user && this.hasAuthCookie()) {
       this.currentUserSubject.next(user);
     } else {
-      this.logout();
+      this.currentUserSubject.next(null);
     }
   }
 
@@ -41,7 +40,9 @@ export class AuthService {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     console.log('Logging in with credentials:', credentials);
     return firstValueFrom(
-      this.http.post<AuthResponse>(`${this.baseUrl}/login`, credentials).pipe(
+      this.http.post<AuthResponse>(`${this.baseUrl}/login`, credentials, {
+        withCredentials: true // Important for cookies
+      }).pipe(
         tap((response) => {
           console.log('Login response:', response);
           this.handleAuthSuccess(response);
@@ -53,7 +54,9 @@ export class AuthService {
   async signup(userData: SignupRequest): Promise<AuthResponse> {
     console.log('Signing up user:', userData);
     return firstValueFrom(
-      this.http.post<AuthResponse>(`${this.baseUrl}/signup`, userData).pipe(
+      this.http.post<AuthResponse>(`${this.baseUrl}/signup`, userData, {
+        withCredentials: true
+      }).pipe(
         tap((response) => {
           console.log('Signup response:', response);
           this.handleAuthSuccess(response);
@@ -63,50 +66,66 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    this.currentUserSubject.next(null);
-    this.router.navigate(['/']);
+    // Call backend logout to clear cookies
+    this.http.post(`${this.baseUrl}/logout`, {}, { withCredentials: true }).subscribe({
+      next: () => {
+        this.currentUserSubject.next(null);
+        this.router.navigate(['/']);
+      },
+      error: () => {
+        // Even if backend call fails, clear frontend state
+        this.currentUserSubject.next(null);
+        this.router.navigate(['/']);
+      }
+    });
   }
 
   private handleAuthSuccess(response: AuthResponse): void {
-    const { token, user } = response;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    const { user } = response;
+    // No need to store anything manually - cookies are set by backend
     this.currentUserSubject.next(user);
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
+  private getUserFromCookie(): User | null {
+    const userCookie = this.getCookie('userInfo');
+    if (userCookie) {
+      try {
+        console.log('User cookie found:', userCookie);
+        return JSON.parse(decodeURIComponent(userCookie));
+      } catch {
+        console.error("Failed to parse user cookie");
+        return null;
+      }
+    }
+    return null;
   }
 
-  getStoredUser(): User | null {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+  private hasAuthCookie(): boolean {
+    return !!this.getCookie('authToken');
+  }
+
+  private getCookie(name: string): string | null {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
   }
 
   isLoggedIn(): boolean {
-    const token = this.getToken();
-    return !!token && !this.isTokenExpired(token);
+    return !!this.getUserFromCookie() && this.hasAuthCookie();
   }
 
   isAdmin(): boolean {
-    const user = this.getStoredUser();
+    const user = this.getUserFromCookie();
     return user?.role === 'ADMIN';
   }
 
   isUser(): boolean {
-    const user = this.getStoredUser();
+    const user = this.getUserFromCookie();
     return user?.role === 'USER' || user?.role === 'ADMIN';
-  }
-
-  private isTokenExpired(token: string): boolean {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const exp = payload.exp * 1000;
-      return Date.now() > exp;
-    } catch {
-      return true;
-    }
   }
 }

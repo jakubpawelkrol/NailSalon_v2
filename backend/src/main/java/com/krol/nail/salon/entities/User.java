@@ -41,7 +41,7 @@ public class User implements UserDetails {
     private Role role = Role.USER;
 
     @Column(nullable = false)
-    private boolean enabled = false;
+    private boolean enabled = true;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

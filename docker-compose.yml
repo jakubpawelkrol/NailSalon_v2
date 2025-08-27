@@ -19,7 +19,7 @@ services:
     build: ./backend
     container_name: spring-backend
     env_file:
-      - ./backend/.env # Add this line
+      - ./backend/.env
     environment:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres

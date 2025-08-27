@@ -8,7 +8,7 @@ import { AdminCalendarComponent } from './components/admin-calendar/admin-calend
 import { LoginComponent } from './components/auth/login/login.component';
 import { AboutComponent } from './components/about/about.component';
 import { SignupComponent } from './components/auth/signup/signup.component';
-import { AuthGuard } from './components/auth/auth.guard';
+import { adminGuard, authGuard } from './components/auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -16,16 +16,14 @@ export const routes: Routes = [
   { path: 'services', component: ServicesComponent },
   {
     path: 'schedule',
-    canActivate: [AuthGuard],
-    data: { role: 'USER' },
+    canActivate: [authGuard],
     component: ScheduleComponent,
   },
   { path: 'gallery', component: GalleryComponent },
   { path: 'contact', component: ContactComponent },
   {
     path: 'admin',
-    canActivate: [AuthGuard],
-    data: { role: 'ADMIN' },
+    canActivate: [adminGuard],
     component: AdminCalendarComponent,
   },
   { path: 'login', component: LoginComponent },

@@ -1,5 +1,5 @@
 import { Component, effect, HostListener, inject } from '@angular/core';
-import { RestService } from '../../services/common/rest-service.service';
+import { RestService } from '../../services/common/rest.service';
 import { GalleryStateService } from '../../services/common/gallery-state.service';
 import { CommonModule } from '@angular/common';
 import { PhotoModel } from '../../models/gallery.model';
@@ -12,11 +12,9 @@ import { PhotoModel } from '../../models/gallery.model';
 })
 export class GalleryComponent {
   galleryService = inject(GalleryStateService);
-  restService = inject(RestService);
 
   constructor() {
-    this.restService.getGalleryPhotos();
-    effect(() => { this.galleryService.setImages(this.restService.photos()); });
+    this.galleryService.loadImages();
   }
 
   openImage(img: PhotoModel) {

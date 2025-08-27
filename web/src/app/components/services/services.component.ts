@@ -18,20 +18,16 @@ export class ServicesComponent {
 
   protected categories = computed<ServiceCategory[]>(() => {
     const services = this.services();
-    const set = new Set<ServiceCategory>(services.map(s => s.category));
+    const set = new Set<ServiceCategory>(services.map((s: ServiceItem) => s.category));
     return Array.from(set);
   });
 
   ngOnInit() {
-    this.servicesService.loadServices();
+    this.servicesService.loadServicesIfNeeded();
   }
 
   protected byCategory(cat: ServiceCategory): ServiceItem[] {
-    return this.services().filter(s => s.category === cat);
-  }
-  
-  protected getServicesByCategory(category: ServiceCategory): ServiceItem[] {
-    return this.servicesService.getServicesByCategory(category);
+    return this.servicesService.getServicesByCategory(cat);
   }
 
 }

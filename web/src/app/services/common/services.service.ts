@@ -1,22 +1,32 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { RestService } from './rest.service';
 import { ServiceCategory, ServiceItem } from '../../models/services.model';
+import { CacheService } from './cache.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ServicesService {
   private rest = inject(RestService);
+  private cacheService = inject(CacheService);
 
-  private _services = signal<ServiceItem[]>([]);
-  readonly services = this._services.asReadonly();
+  private readonly CACHE_DURATION = 60 * 60 * 1000; // 60 minutes
 
-  private _loading = signal<boolean>(false);
-  readonly loading = this._loading.asReadonly();
+  private servicesCache = this.cacheService.createCache<ServiceItem>(
+    {
+      key: 'services',
+      cacheDuration: this.CACHE_DURATION
+    },
+    () => this.rest.getServices()
+  );
+
+  readonly services = this.servicesCache.data;
+  readonly loading = this.servicesCache.loading;
+  readonly error = this.servicesCache.error;
 
   // Computed properties for categorized services
   readonly servicesByCategory = computed(() => {
-    const services = this._services();
+    const services: ServiceItem[] = this.services();
     const categories: Record<ServiceCategory, ServiceItem[]> = {
       'Manicure': [],
       'Pedicure': [],
@@ -33,37 +43,33 @@ export class ServicesService {
   });
 
   readonly popularServices = computed(() => {
-    return this._services().filter(service => service.popular);
+    return this.services().filter((service: ServiceItem) => service.popular);
   });
 
+  loadServicesIfNeeded(): void {
+    this.servicesCache.loadIfNeeded();
+  }
+  
   // Load services from API
   loadServices(): void {
-    this._loading.set(true);
-    this.rest.getServices().subscribe({
-      next: (data) => {
-        this._services.set(data);
-        this._loading.set(false);
-        console.log('Loaded services:', data);
-      },
-      error: (err) => {
-        console.error('Failed to load services:', err);
-        this._loading.set(false);
-      },
-    });
+    this.servicesCache.load();
   }
 
-  // Utility methods
-  getServiceByName(name: string): ServiceItem | undefined {
-    return this._services().find(service => service.name === name);
+  refreshServices(): void {
+    this.servicesCache.refresh();
+  }
+
+  isDataFresh(): boolean {
+    return this.servicesCache.isDataFresh();
   }
 
   getServicesByCategory(category: ServiceCategory): ServiceItem[] {
-    return this._services().filter(service => service.category === category);
+    return this.servicesCache.filterBy((service: ServiceItem) => service.category === category);
   }
 
   // Getter method (for backward compatibility)
   getServices(): ServiceItem[] {
-    return this._services();
+    return this.servicesCache.getData();
   }
 
 }

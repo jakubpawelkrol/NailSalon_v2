@@ -17,7 +17,7 @@ public class ServicesService {
 
     public List<ServiceDto> getAllServices() {
         return servicesRepository.findAllOrderedByCategory().stream()
-                .map(s -> new ServiceDto(s.getCategory().name(), s.getName(),
+                .map(s -> new ServiceDto(s.getCategory().getDisplayName(), s.getName(),
                         s.getDescription(), s.getPrice(), s.getDuration(), s.isPopular()))
                 .toList();
     }

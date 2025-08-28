@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -41,16 +42,15 @@ public class Services {
     private boolean popular = false;
 
     @Column(nullable = false)
-    private Date createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Services(String category, String name, String description, String price, double duration, boolean popular) {
+    public Services(String category, String name, String description, String price, Long duration, boolean popular) {
         this.category = ServiceCategory.of(category);
         this.name = name;
         this.description = description;
         this.price = price;
         this.duration = duration;
         this.popular = popular;
-        this.createdAt = new Date();
     }
 
 }

@@ -3,7 +3,7 @@
     <img routerLink="/" src="assets/logo.svg" alt="Logo" class="logo-icon" />
   </div>
   <div class="auth-section">
-    @if (isLoggedIn$ | async) {
+    @if (isLoggedIn$) {
     <span class="welcome-text">{{ greeting$ | async }}</span>
     <button (click)="logout()">Wyloguj</button>
     } @else {

@@ -13,15 +13,11 @@ import { AsyncPipe } from '@angular/common';
 export class SiteHeaderComponent {
   auth = inject(AuthService);
 
-  user$ = this.auth.getUser();
-  
-  greeting$ = this.user$.pipe(
-    map((user) => (user ? `Witaj ${user.firstName}` : null))
-  );
+  user$ = this.auth.getUserSubscription();
 
-  isLoggedIn$ = this.user$.pipe(
-    map((user) => !!user)
-  );
+  greeting$ = this.user$.pipe(map((user) => `Witaj ${user?.firstName}`));
+
+  isLoggedIn$ = this.auth.isLoggedIn();
 
   logout() {
     this.auth.logout();

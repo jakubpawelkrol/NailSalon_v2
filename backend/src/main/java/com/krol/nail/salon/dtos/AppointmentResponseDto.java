@@ -16,7 +16,7 @@ public class AppointmentResponseDto {
     private String serviceText;
     private String date;
     private String time;
-    private byte duration;
+    private Long duration;
     private String name;
     private String notes;
 }

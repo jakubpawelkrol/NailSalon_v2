@@ -1,16 +1,14 @@
 <div class="home-container">
-  @if (isLoggedIn$ | async) {
-    <button routerLink="/schedule">Umów wizytę</button>
-    @if (isAdmin$ | async) {
-      <button routerLink="/admin">Kalendarz</button>
-    }
-   }
+  @if (isLoggedIn$) {
+  <button routerLink="/schedule">Umów wizytę</button>
+  @if (isAdmin$) {
+  <button routerLink="/admin">Kalendarz</button>
+  } }
   <button routerLink="/services">Usługi</button>
   <button routerLink="/about">O mnie</button>
   <button routerLink="/gallery">Galeria</button>
   <button routerLink="/contact">Kontakt</button>
   <button (click)="helloWorld()">Hello world</button>
-  <button (click)="printUserCookie()">Print user cookie</button>
   <span class="inline-container">
     <input #cookieNameInput type="text" placeholder="Cookie name" />
     <button (click)="printCookie(cookieNameInput.value)">Print cookie</button>

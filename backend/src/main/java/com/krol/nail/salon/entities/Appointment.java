@@ -17,12 +17,12 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
     @OneToOne
+    @PrimaryKeyJoinColumn
     private Services service;
 
-    @Column(nullable = false)
     @OneToOne
+    @PrimaryKeyJoinColumn
     private User user;
 
     @Column(nullable = false)
@@ -35,7 +35,7 @@ public class Appointment {
     private String notes;
 
     @Column(nullable = false)
-    private Date creationDate;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public Appointment(Services service, User user, LocalDateTime appointmentStartDate, String notes) {
         this.service = service;
@@ -43,7 +43,6 @@ public class Appointment {
         this.appointmentStartDate = appointmentStartDate;
         calculateEndTime();
         this.notes = notes;
-        this.creationDate = new Date();
     }
 
     public void setAppointmentStartDate(LocalDateTime appointmentStartDate) {

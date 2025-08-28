@@ -23,4 +23,6 @@ public class AppointmentRequestDto {
     @Pattern(regexp = "\\d{2}:\\d{2}", message = "Time must be in HH:mm format")
     private String appointmentTime;
 
+    private String notes;
+
 }

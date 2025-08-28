@@ -6,10 +6,7 @@ import { CommonModule } from '@angular/common';
 import { Appointment, AppointmentToSend } from '../../models/appointment.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
-import {
-  ServiceItem,
-  ServiceCategory,
-} from '../../models/services.model';
+import { ServiceItem, ServiceCategory } from '../../models/services.model';
 import { AuthService } from '../../services/common/auth.service';
 import { User } from '../../models/auth.model';
 import { Subscription } from 'rxjs';
@@ -93,15 +90,16 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     // Check if user is already logged in (synchronous check)
     if (this.auth.isLoggedIn()) {
       // Synchronously get the current user value if available
-      let user: User | null = null;
-      this.auth.getUser().subscribe(u => user = u).unsubscribe();
+      const user = this.auth.getUser();
       this.updateUserNameField(user);
     }
 
     // Subscribe to user changes (for login/logout during component lifetime)
-    this.userSubscription = this.auth.getUser().subscribe((user) => {
-      this.updateUserNameField(user);
-    });
+    this.userSubscription = this.auth
+      .getUserSubscription()
+      .subscribe((user) => {
+        this.updateUserNameField(user);
+      });
   }
 
   // sygnały z daty i czasu trwania (dla przeliczeń slotów)
@@ -140,11 +138,8 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     });
 
     if (this.auth.isLoggedIn()) {
-      this.auth.getUser().pipe(
-        map((user) => {
-          this.client$ = user ? `${user.firstName} ${user.lastName}` : null;
-        })
-      );
+      const user = this.auth.getUser();
+      this.client$ = user ? `${user.firstName} ${user.lastName}` : null;
       this.form.controls.name.setValue(this.client$ || '');
     }
   }
@@ -195,7 +190,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     const v = this.form.value;
     const appt: AppointmentToSend = {
       serviceName: v.name!,
-      userEmail: this.auth.getUser().subscribe(user => user!.email) || '',
+      userEmail: this.auth.getUser()?.email || '',
       appointmentDate: v.date!,
       time: v.time!,
       notes: v.notes || undefined,
@@ -227,7 +222,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
 
   get todays() {
     const d = this.form.controls.date.value as string | null;
-    return d ? this.store.byDate(d) : [];
+    return d ? this.store.byDate()(d) : [];
   }
 
   private updateUserNameField(user: User | null) {

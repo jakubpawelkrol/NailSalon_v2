@@ -35,7 +35,7 @@ public class Services {
 
     @Column(precision = 1, nullable = false)
     //@Column(nullable = false)
-    private double duration;
+    private Long duration;
 
     @Column(nullable = false)
     private boolean popular = false;

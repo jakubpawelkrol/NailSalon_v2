@@ -1,6 +1,6 @@
 package com.krol.nail.salon.services;
 
-import com.krol.nail.salon.dtos.AppointmentDto;
+import com.krol.nail.salon.dtos.AppointmentRequestDto;
 import com.krol.nail.salon.entities.Appointment;
 import com.krol.nail.salon.entities.Services;
 import com.krol.nail.salon.entities.User;
@@ -10,10 +10,6 @@ import com.krol.nail.salon.repositories.ServicesRepository;
 import com.krol.nail.salon.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class AppointmentService {
@@ -27,12 +23,15 @@ public class AppointmentService {
         this.userRepository = userRepository;
     }
 
-    public AppointmentDto saveAppointment(AppointmentDto appointmentDto) {
-        Services service = servicesRepository.findByName(appointmentDto.serviceName())
-                .orElseThrow(() -> new ServiceNotFoundException("Service " + appointmentDto.serviceName() + " was not found in the database."));
-        User user = userRepository.findByEmail(appointmentDto.userEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("Username with email: " + appointmentDto.userEmail() + " was not found in the database."));
-        Appointment appToSave = new Appointment(service, user);
-        return appointmentRepository.save(appToSave);
+    public AppointmentRequestDto saveAppointment(AppointmentRequestDto appointmentRequestDto) {
+        Services service = servicesRepository.findByName(appointmentRequestDto.getServiceName())
+                .orElseThrow(() -> new ServiceNotFoundException("Service " + appointmentRequestDto.getServiceName() + " was not found in the database."));
+        User user = userRepository.findByEmail(appointmentRequestDto.getUserEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Username with email: " + appointmentRequestDto.getUserEmail() + " was not found in the database."));
+        Appointment appToSave = appointmentRepository.save();
+        return new AppointmentRequestDto(
+                appToSave.getService().getName(),
+                appToSave.getUser().getEmail(),
+                appointmentRequestDto.appointmentStartDate());
     }
 }

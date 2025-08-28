@@ -1,7 +1,6 @@
 package com.krol.nail.salon.services;
 
 import com.krol.nail.salon.dtos.ServiceDto;
-import com.krol.nail.salon.entities.Services;
 import com.krol.nail.salon.repositories.ServicesRepository;
 import org.springframework.stereotype.Service;
 

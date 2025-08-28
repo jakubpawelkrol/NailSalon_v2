@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppointmentService } from '../../services/common/appointment.service';
 import { v4 as uuid } from 'uuid';
 import { CommonModule } from '@angular/common';
-import { Appointment } from '../../models/appointment.model';
+import { Appointment, AppointmentToSend } from '../../models/appointment.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
 import {
@@ -155,7 +155,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     const duration = Number(this.durationSig() ?? 0);
     if (!date || !duration) return [];
 
-    const dayAppts = this.store.byDate(date);
+    const dayAppts = this.store.byDate()(date);
     const busy: Array<[number, number]> = dayAppts.map((a) => {
       const s = toMinutes(a.time);
       return [s, s + a.duration + BUFFER_MIN];
@@ -193,19 +193,17 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     }
 
     const v = this.form.value;
-    const appt: Appointment = {
-      id: uuid(),
-      serviceText: v.serviceText!, // nazwa usługi zapisujemy jako tekst
-      duration: Number(v.duration!),
-      date: v.date!,
+    const appt: AppointmentToSend = {
+      serviceName: v.name!,
+      userEmail: this.auth.getUser().subscribe(user => user!.email) || '',
+      appointmentDate: v.date!,
       time: v.time!,
-      name: v.name!,
       notes: v.notes || undefined,
     };
 
     this.submitting = true;
     try {
-      this.store.add(appt);
+      this.store.createAppointment(appt);
       this.successMsg = 'Rezerwacja zapisana! 💅';
       this.form.reset({ duration: 60, service: null });
     } catch (e: any) {

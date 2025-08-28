@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
-import { Observable } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { PhotoModel } from '../../models/gallery.model';
 import { ServiceItem } from '../../models/services.model';
+import { Appointment, AppointmentToSend } from '../../models/appointment.model';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +20,10 @@ export class RestService {
 
   getServices(): Observable<ServiceItem[]> {
     return this.http.get<ServiceItem[]>(`${this.baseUrl}/services/getAll`);
+  }
+
+  postAppointment(appointment: AppointmentToSend): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.baseUrl}/appointments/schedule`, appointment);
   }
 
   getHello(): Observable<string> {

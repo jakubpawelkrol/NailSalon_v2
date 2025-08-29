@@ -15,6 +15,6 @@ import java.util.UUID;
 public interface AppointmentRepository extends JpaRepository<Appointment, UUID> {
     List<Appointment> findByAppointmentStartDateBetween(LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT DISTINCT a.appointmentStartDate FROM Appointment a WHERE a.appointmentStartDate >= :startDate AND a.appointmentStartDate <= :endDate")
+    @Query("SELECT DISTINCT CAST(a.appointmentStartDate as DATE) FROM Appointment a WHERE a.appointmentStartDate >= :startDate AND a.appointmentStartDate <= :endDate")
     List<LocalDateTime> findDistinctAppointmentDatesInRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

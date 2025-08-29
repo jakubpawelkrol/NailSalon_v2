@@ -1,15 +1,14 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CalendarDay } from '../../models/calendar.model';
 import { AppointmentService } from '../../services/common/appointment.service';
-import { Appointment } from '../../models/appointment.model';
 
 @Component({
-  selector: 'app-admin-calendar',
+  selector: 'app-calendar',
   imports: [],
-  templateUrl: './admin-calendar.component.html',
-  styleUrl: './admin-calendar.component.scss',
+  templateUrl: './calendar.component.html',
+  styleUrl: './calendar.component.scss',
 })
-export class AdminCalendarComponent implements OnInit {
+export class CalendarComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
 
   currentMonth = signal(new Date().getMonth());

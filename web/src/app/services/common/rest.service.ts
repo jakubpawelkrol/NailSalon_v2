@@ -32,7 +32,7 @@ export class RestService {
 
   getAppointmentByDate(date: string): Observable<Appointment[]> {
     return this.http.get<Appointment[]>(
-      `${this.baseUrl}/appointments/get/${date}`
+      `${this.baseUrl}/appointments/getDate/${date}`
     );
   }
 

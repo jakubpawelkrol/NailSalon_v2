@@ -11,6 +11,7 @@ import com.krol.nail.salon.mapper.AppointmentMapper;
 import com.krol.nail.salon.repositories.AppointmentRepository;
 import com.krol.nail.salon.repositories.ServicesRepository;
 import com.krol.nail.salon.repositories.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +20,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final ServicesRepository servicesRepository;
@@ -72,7 +73,9 @@ public class AppointmentService {
     }
 
     public List<AppointmentResponseDto> getAllAppointmentsOnCertainDay(LocalDate day) {
-        return Optional.of(appointmentRepository.findByAppointmentStartDateBetween(day.atStartOfDay(), day.plusDays(1).atStartOfDay()))
+        LocalDateTime start = day.atStartOfDay();
+        LocalDateTime end = day.plusDays(1).atStartOfDay().minusSeconds(1);
+        return Optional.of(appointmentRepository.findByAppointmentStartDateBetween(start, end))
                 .filter(list -> !list.isEmpty())
                 .orElseThrow(() -> new AppointmentNotFoundException("No appointments for the day: " + day))
                 .stream()
@@ -82,7 +85,7 @@ public class AppointmentService {
 
     public List<String> getAppointmentExistenceForMonth(int year, int month) {
         LocalDateTime startDate = LocalDate.of(year, month, 1).atStartOfDay();
-        LocalDateTime endDate = LocalDate.of(year, month, 1).plusMonths(1).atStartOfDay().minusMinutes(1);
+        LocalDateTime endDate = LocalDate.of(year, month, 1).plusMonths(1).atStartOfDay().minusSeconds(1);
 
         return Optional.of(appointmentRepository.findDistinctAppointmentDatesInRange(startDate, endDate))
                 .filter(list -> !list.isEmpty())

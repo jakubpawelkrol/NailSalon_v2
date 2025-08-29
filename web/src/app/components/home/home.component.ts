@@ -16,28 +16,10 @@ export class HomeComponent {
   private rest = inject(RestService);
 
   user$ = this.auth.getUser();
-  isLoggedIn$ = this.user$.pipe(map(user => !!user));
-  isAdmin$ = this.user$.pipe(map(user => user?.role.includes('ADMIN')));
+  isLoggedIn$ = this.user$.pipe(map((user) => !!user));
+  isAdmin$ = this.user$.pipe(map((user) => user?.role.includes('ADMIN')));
 
   helloWorld() {
     this.rest.hello();
-  }
-
-  printCookie(name: string) {
-    const temp = document.cookie.split(';');
-    for (let i = 0; i < temp.length; i++) {
-      console.log('Cookie part:', temp[i]);
-    }
-    console.log('printCookie() called for ', name);
-    console.log('Cookie string: ', document.cookie);
-    const match = document.cookie.match(
-      new RegExp('(^| )' + name + '=([^;]+)')
-    );
-    console.log('Match: ', match);
-    if (match) {
-      console.log('Cookie: ', decodeURIComponent(match[2]));
-      return;
-    }
-    console.log('No cookie found with name:', name);
   }
 }

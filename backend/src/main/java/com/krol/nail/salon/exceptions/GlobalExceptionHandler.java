@@ -1,6 +1,7 @@
 package com.krol.nail.salon.exceptions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,6 +26,18 @@ public class GlobalExceptionHandler {
                 new Date(),
                 ex.getMessage(),
                 request.getDescription(true));
+    }
+
+    @ExceptionHandler(value = AppointmentNotFoundException.class)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public ErrorMessage noAppointmentException(AppointmentNotFoundException ex, HttpServletRequest request) {
+        log.warn("No appointments for given criteria were found: " + request.getRequestURI());
+        return new ErrorMessage(
+                HttpStatus.NO_CONTENT.value(),
+                new Date(),
+                ex.getMessage(),
+                request.getRequestURL().toString()
+        );
     }
 
     @ExceptionHandler(value = {Exception.class, RuntimeException.class, IOException.class})

@@ -23,8 +23,26 @@ export class RestService {
   }
 
   postAppointment(appointment: AppointmentToSend): Observable<Appointment> {
-    console.log("Posting appointment to backend: ", appointment);
-    return this.http.post<Appointment>(`${this.baseUrl}/appointments/schedule`, appointment);
+    console.log('Posting appointment to backend: ', appointment);
+    return this.http.post<Appointment>(
+      `${this.baseUrl}/appointments/schedule`,
+      appointment
+    );
+  }
+
+  getAppointmentByDate(date: string): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(
+      `${this.baseUrl}/appointments/get/${date}`
+    );
+  }
+
+  getAppointmentExistenceByMonth(
+    year: number,
+    month: number
+  ): Observable<string[]> {
+    return this.http.get<string[]>(
+      `${this.baseUrl}/appointments/exists/${year}/${month + 1}`
+    );
   }
 
   getHello(): Observable<string> {

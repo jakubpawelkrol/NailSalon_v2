@@ -70,7 +70,11 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   //categories = this.servicesService.servicesByCategory;
   categories = computed<ServiceCategory[]>(() => {
     const servicesList = this.services();
-    return Array.from(new Set(servicesList.map((s: { category: ServiceCategory; }) => s.category)));
+    return Array.from(
+      new Set(
+        servicesList.map((s: { category: ServiceCategory }) => s.category)
+      )
+    );
   });
 
   private setupFormSubscriptions() {
@@ -95,16 +99,17 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     if (this.auth.isLoggedIn()) {
       // Synchronously get the current user value if available
       let user: User | null = null;
-      this.auth.getUser().subscribe((u) => (user = u)).unsubscribe();
+      this.auth
+        .getUser()
+        .subscribe((u) => (user = u))
+        .unsubscribe();
       this.updateUserNameField(user);
     }
 
     // Subscribe to user changes (for login/logout during component lifetime)
-    this.userSubscription = this.auth
-      .getUser()
-      .subscribe((user) => {
-        this.updateUserNameField(user);
-      });
+    this.userSubscription = this.auth.getUser().subscribe((user) => {
+      this.updateUserNameField(user);
+    });
   }
 
   // sygnały z daty i czasu trwania (dla przeliczeń slotów)
@@ -143,11 +148,14 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     });
 
     if (this.auth.isLoggedIn()) {
-      this.auth.getUser().pipe(
-        map((user) => {
-          this.client$ = user ? `${user.firstName} ${user.lastName}` : null;
-        })
-      ).subscribe();
+      this.auth
+        .getUser()
+        .pipe(
+          map((user) => {
+            this.client$ = user ? `${user.firstName} ${user.lastName}` : null;
+          })
+        )
+        .subscribe();
       this.form.controls.name.setValue(this.client$ || '');
     }
   }
@@ -158,7 +166,9 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     const duration = Number(this.durationSig() ?? 0);
     if (!date || !duration) return [];
 
-    const dayAppts = this.appointmentService.byDate()(date);
+    const dayAppts = this.appointmentService
+      .selectedDateAppointments()
+      .filter((a) => a.date === date);
     const busy: Array<[number, number]> = dayAppts.map((a) => {
       const s = toMinutes(a.time);
       return [s, s + a.duration + BUFFER_MIN];
@@ -187,7 +197,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   }
 
   async submit() {
-    console.log("submitting");
+    console.log('submitting');
     this.successMsg = '';
     this.errorMsg = '';
     if (this.form.invalid || !this.form.value.time) {
@@ -211,28 +221,28 @@ export class ScheduleComponent implements OnInit, OnDestroy {
         notes: v.notes || undefined,
       };
 
-      console.log("sending appointment: ", appt);
+      console.log('sending appointment: ', appt);
       this.appointmentService.createAppointment(appt).subscribe({
         next: (result) => {
-          console.log("appointment creation result: ", result);
-          if(result.success) {
+          console.log('appointment creation result: ', result);
+          if (result.success) {
             this.successMsg = 'Rezerwacja zapisana! 💅';
-            console.log("success");
+            console.log('success');
             this.form.reset({ duration: 60, service: null });
-          } else if(result.error) {
+          } else if (result.error) {
             this.errorMsg = result.error;
           }
         },
         error: (e) => {
-          console.log("Error:", e);
+          console.log('Error:', e);
           this.errorMsg = 'Wystąpił nieoczekiwany błąd.';
-        }
+        },
       });
     } catch (e: any) {
-      console.log("Error:", e);
+      console.log('Error:', e);
       this.errorMsg = e?.message || 'Nie udało się zapisać terminu.';
     } finally {
-      console.log("finally")
+      console.log('finally');
       this.submitting = false;
     }
   }
@@ -251,7 +261,11 @@ export class ScheduleComponent implements OnInit, OnDestroy {
 
   get todays() {
     const d = this.form.controls.date.value as string | null;
-    return d ? this.appointmentService.byDate()(d) : [];
+    return d
+      ? this.appointmentService
+          .selectedDateAppointments()
+          .filter((a) => a.date === d)
+      : [];
   }
 
   private updateUserNameField(user: User | null) {

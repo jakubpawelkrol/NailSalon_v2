@@ -28,7 +28,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<?> getAppointmentById(@RequestParam UUID uuid) {
+    public ResponseEntity<?> getAppointmentById(@PathVariable UUID uuid) {
         log.info("Looking for appointment ID: " + uuid);
         return ResponseEntity.ok().body(appointmentService.getAppointment(uuid));
     }
@@ -39,9 +39,14 @@ public class AppointmentController {
         return ResponseEntity.ok().body(appointmentService.getAllAppointments());
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllAppointmentsOnDay(@RequestBody LocalDate date) {
+    @GetMapping("get/{date}")
+    public ResponseEntity<?> getAllAppointmentsOnDay(@PathVariable LocalDate date) {
         log.info("Looking for all appointments on " + date);
         return ResponseEntity.ok().body(appointmentService.getAllAppointmentsOnCertainDay(date));
+    }
+
+    @GetMapping("exists/{year}/{month}")
+    public ResponseEntity<?> getAppointmentExistenceGivenMonth(@PathVariable int year, @PathVariable int month) {
+        return ResponseEntity.ok().body(appointmentService.getAppointmentExistenceForMonth(year, month));
     }
 }

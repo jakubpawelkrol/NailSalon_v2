@@ -1,47 +1,64 @@
 <div class="calendar-wrapper">
-    <div class="calendar-header">
-        <button (click)="prevMonth()">&lt;</button>
-        <h2>
-            {{
-                currentMonth().toLocaleString('pl-PL', { month: 'long', year: 'numeric' })
-            }}
-        </h2>
-        <button (click)="nextMonth()">&gt;</button>
-    </div>
-  
-    <div class="calendar-grid">
-        <!-- Weekday headers -->
-        @for (day of dayNames; track $index) {
-            <div class="calendar-day header">{{ day }}</div>
-        }  
-        @for (week of weeks(); track $index) {
-            @for (day of week; track day.date) {
-                <div
-                    class="calendar-day"
-                    [class.outside]="!day.isCurrentMonth"
-                    [class.today]="day.isToday"
-                    (click)="selectDay(day)"
-                >
-                <div class="day-number">{{ day.date.getDate() }}</div>
-                @if (day.appointments!.length > 0) {
-                    <div class="appointment-dot"></div>
-                }
-                </div>
-            }
-        }
-    </div>
-  
-    @if (selectedDay()) {
-        <div class="appointment-panel">
-            <h3>Klientki w dniu {{ selectedDay()!.date.toLocaleDateString('pl-PL') }}</h3>
-            <ul>
-            @for (appt of selectedDay()!.appointments; track appt.id) {
-                <li>
-                    <strong>{{ appt.time }}</strong> – {{ appt.name }}, {{ appt.serviceText }}
-                </li>
-            }
-            </ul>
-        </div>
+  <div class="calendar-header">
+    <button (click)="prevMonth()">&lt;</button>
+    <h2>
+      {{
+        getCurrentMonthDate().toLocaleString("pl-PL", {
+          month: "long",
+          year: "numeric"
+        })
+      }}
+    </h2>
+    <button (click)="nextMonth()">&gt;</button>
+  </div>
+
+  <div class="calendar-grid">
+    <!-- Weekday headers -->
+    @for (day of dayNames; track $index) {
+    <div class="calendar-day header">{{ day }}</div>
     }
+    <!-- Calendar days -->
+    @for (week of weeks(); track $index) { @for (day of week; track day.date) {
+    <div
+      class="calendar-day"
+      [class.outside]="!day.isCurrentMonth"
+      [class.today]="day.isToday"
+      [class.selected]="
+        selectedDay() && selectedDay()!.date.getTime() === day.date.getTime()
+      "
+      (click)="onDateClick(day)"
+    >
+      <div class="day-number">{{ day.date.getDate() }}</div>
+      @if (hasAppointments(formatDateLocal(day.date))) {
+      <div class="appointment-dot"></div>
+      }
+    </div>
+    } }
+  </div>
+
+  <!-- Appointment panel -->
+  @if (selectedDate() && selectedDateAppointments().length > 0) {
+  <div class="appointment-panel">
+    <h3>Klientki w dniu {{ selectedDate() }}</h3>
+    <ul>
+      @for (appt of selectedDateAppointments(); track appt.id) {
+      <li>
+        <strong>{{ appt.time }}</strong> – {{ appt.name }},
+        {{ appt.serviceText }}
+        @if (appt.notes) {
+        <div class="appointment-notes">{{ appt.notes }}</div>
+        }
+      </li>
+      }
+    </ul>
+  </div>
+  }
+
+  <!-- Show message if no appointments on selected date -->
+  @if (selectedDate() && selectedDateAppointments().length === 0) {
+  <div class="appointment-panel">
+    <h3>{{ selectedDate() }}</h3>
+    <p>Brak klientek w tym dniu</p>
+  </div>
+  }
 </div>
-  

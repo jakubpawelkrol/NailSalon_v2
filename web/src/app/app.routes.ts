@@ -23,7 +23,7 @@ export const routes: Routes = [
   { path: 'contact', component: ContactComponent },
   {
     path: 'admin',
-    canActivate: [adminGuard],
+    canActivate: [authGuard],
     component: AdminCalendarComponent,
   },
   { path: 'login', component: LoginComponent },

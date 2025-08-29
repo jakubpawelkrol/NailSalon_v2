@@ -16,8 +16,8 @@ export class HomeComponent {
   private rest = inject(RestService);
 
   user$ = this.auth.getUser();
-  isLoggedIn$ = this.auth.isLoggedIn();
-  isAdmin$ = this.auth.isAdmin();
+  isLoggedIn$ = this.user$.pipe(map(user => !!user));
+  isAdmin$ = this.user$.pipe(map(user => user?.role.includes('ADMIN')));
 
   helloWorld() {
     this.rest.hello();

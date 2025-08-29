@@ -28,7 +28,6 @@ export class SignupComponent {
   });
 
   async submit() {
-    console.log('Submitting signup form:', this.form.value);
     this.error = '';
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -42,14 +41,12 @@ export class SignupComponent {
         email: this.form.value.email!,
         password: this.form.value.password!,
       });
-      this.router.navigate(['/']);
+      this.router.navigate(['/login']);
     } catch (e: any) {
       this.error = e?.message || 'Problem z rejestracją';
     } finally {
       this.loading = false;
-      console.log('Signup completed, loading: ', this.loading);
     }
-    console.log('Signup form submitted:', this.form.value);
   }
 
   hasErr(ctrl: string, err?: string) {

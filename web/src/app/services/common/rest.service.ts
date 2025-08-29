@@ -23,6 +23,7 @@ export class RestService {
   }
 
   postAppointment(appointment: AppointmentToSend): Observable<Appointment> {
+    console.log("Posting appointment to backend: ", appointment);
     return this.http.post<Appointment>(`${this.baseUrl}/appointments/schedule`, appointment);
   }
 

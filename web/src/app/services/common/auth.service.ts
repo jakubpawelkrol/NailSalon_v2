@@ -33,17 +33,8 @@ export class AuthService {
     }
   }
 
-  getUser(): User | null {
-    if (this.currentUserSubject.value === null) {
-      return {
-        id: 'no-id',
-        email: 'no-email',
-        firstName: 'unknown',
-        lastName: 'unknown',
-        role: 'UNDEFINED',
-      };
-    }
-    return this.currentUserSubject.value;
+  getUser() {
+    return this.currentUser$;
   }
 
   getUserSubscription() {
@@ -51,7 +42,6 @@ export class AuthService {
   }
 
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    console.log('Logging in with credentials:', credentials);
     return firstValueFrom(
       this.http
         .post<AuthResponse>(`${this.baseUrl}/login`, credentials, {
@@ -59,7 +49,6 @@ export class AuthService {
         })
         .pipe(
           tap((response) => {
-            console.log('Login response:', response);
             this.handleAuthSuccess(response);
           })
         )
@@ -67,7 +56,6 @@ export class AuthService {
   }
 
   async signup(userData: SignupRequest): Promise<AuthResponse> {
-    console.log('Signing up user:', userData);
     return firstValueFrom(
       this.http
         .post<AuthResponse>(`${this.baseUrl}/signup`, userData, {
@@ -75,7 +63,6 @@ export class AuthService {
         })
         .pipe(
           tap((response) => {
-            console.log('Signup response:', response);
             this.handleAuthSuccess(response);
           })
         )
@@ -109,10 +96,8 @@ export class AuthService {
     const userCookie = this.getCookie('userInfo');
     if (userCookie) {
       try {
-        console.log('User cookie found:', userCookie);
         return JSON.parse(decodeURIComponent(userCookie));
       } catch {
-        console.error('Failed to parse user cookie');
         return null;
       }
     }

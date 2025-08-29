@@ -34,6 +34,7 @@ private restService = inject(RestService);
   });
 
   createAppointment(appointmentData: AppointmentToSend): Observable<{ success: boolean; appointment?: Appointment; error?: string }> {
+    console.log('Creating appointment with data: ', appointmentData);
     this._submitting.set(true);
     this._error.set(null);
 
@@ -73,10 +74,10 @@ private restService = inject(RestService);
     );
   }
 
-  loadAppointments(date?: string): void {
+  loadAppointments(date?: string) {
     // You can implement this when you have a GET endpoint
     // For now, we'll just clear local state
-    this._appointments.set([]);
+    return this.appointments;
   }
 
   isSlotTaken(date: string, time: string, duration: number): boolean {

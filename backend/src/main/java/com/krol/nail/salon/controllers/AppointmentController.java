@@ -22,9 +22,8 @@ public class AppointmentController {
 
     @PostMapping("/schedule")
     public ResponseEntity<?> saveAppointment(@RequestBody AppointmentRequestDto appointment) {
-        log.info("Saving appointment: " + appointment);
+        log.info("Saving appointment: " + appointment.toString());
         return ResponseEntity.ok().body(appointmentService.saveAppointment(appointment));
-
     }
 
     @GetMapping("/get/{id}")

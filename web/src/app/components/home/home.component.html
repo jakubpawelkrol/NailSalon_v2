@@ -1,9 +1,8 @@
 <div class="home-container">
-  @if (isLoggedIn$) {
+  @if (isLoggedIn$ | async) {
   <button routerLink="/schedule">Umów wizytę</button>
-  @if (isAdmin$) {
   <button routerLink="/admin">Kalendarz</button>
-  } }
+  }
   <button routerLink="/services">Usługi</button>
   <button routerLink="/about">O mnie</button>
   <button routerLink="/gallery">Galeria</button>

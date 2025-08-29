@@ -8,7 +8,7 @@
       <select [formControl]="form.controls.service">
         <option [ngValue]="null" disabled>Wybierz usługę…</option>
 
-        @for (cat of categories; track cat) {
+        @for (cat of categories(); track cat) {
         <optgroup [label]="cat">
           @for (s of byCategory(cat); track s.name) {
           <option [ngValue]="s">{{ s.name }}</option>

@@ -1,7 +1,6 @@
 import { Component, computed, inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppointmentService } from '../../services/common/appointment.service';
-import { v4 as uuid } from 'uuid';
 import { CommonModule } from '@angular/common';
 import { Appointment, AppointmentToSend } from '../../models/appointment.model';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -9,7 +8,7 @@ import { map, startWith } from 'rxjs/operators';
 import { ServiceItem, ServiceCategory } from '../../models/services.model';
 import { AuthService } from '../../services/common/auth.service';
 import { User } from '../../models/auth.model';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { ServicesService } from '../../services/common/services.service';
 
 const SLOT_MIN = 10;
@@ -38,15 +37,9 @@ function overlaps(a1: number, a2: number, b1: number, b2: number) {
 })
 export class ScheduleComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
-  private store = inject(AppointmentService);
+  private appointmentService = inject(AppointmentService);
   private auth = inject(AuthService);
   private servicesService = inject(ServicesService);
-
-  // currentUser: User | null = null;
-  // private userSubscription?: Subscription;
-  client$: string | null = null;
-  services: ServiceItem[] = this.servicesService.getServices();
-  categories = Array.from(new Set(this.services.map((s) => s.category)));
 
   private userSubscription?: Subscription;
 
@@ -63,11 +56,22 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Handle user data here - this is the right place
     this.setupUserData();
+    this.servicesService.loadServicesIfNeeded();
   }
 
   ngOnDestroy() {
     this.userSubscription?.unsubscribe();
   }
+
+  // currentUser: User | null = null;
+  // private userSubscription?: Subscription;
+  client$: string | null = null;
+  services = this.servicesService.services;
+  //categories = this.servicesService.servicesByCategory;
+  categories = computed<ServiceCategory[]>(() => {
+    const servicesList = this.services();
+    return Array.from(new Set(servicesList.map((s: { category: ServiceCategory; }) => s.category)));
+  });
 
   private setupFormSubscriptions() {
     this.form.controls.date.valueChanges.subscribe(() =>
@@ -90,13 +94,14 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     // Check if user is already logged in (synchronous check)
     if (this.auth.isLoggedIn()) {
       // Synchronously get the current user value if available
-      const user = this.auth.getUser();
+      let user: User | null = null;
+      this.auth.getUser().subscribe((u) => (user = u)).unsubscribe();
       this.updateUserNameField(user);
     }
 
     // Subscribe to user changes (for login/logout during component lifetime)
     this.userSubscription = this.auth
-      .getUserSubscription()
+      .getUser()
       .subscribe((user) => {
         this.updateUserNameField(user);
       });
@@ -138,8 +143,11 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     });
 
     if (this.auth.isLoggedIn()) {
-      const user = this.auth.getUser();
-      this.client$ = user ? `${user.firstName} ${user.lastName}` : null;
+      this.auth.getUser().pipe(
+        map((user) => {
+          this.client$ = user ? `${user.firstName} ${user.lastName}` : null;
+        })
+      ).subscribe();
       this.form.controls.name.setValue(this.client$ || '');
     }
   }
@@ -150,7 +158,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     const duration = Number(this.durationSig() ?? 0);
     if (!date || !duration) return [];
 
-    const dayAppts = this.store.byDate()(date);
+    const dayAppts = this.appointmentService.byDate()(date);
     const busy: Array<[number, number]> = dayAppts.map((a) => {
       const s = toMinutes(a.time);
       return [s, s + a.duration + BUFFER_MIN];
@@ -178,7 +186,8 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       : !!(c?.touched && c.invalid);
   }
 
-  submit() {
+  async submit() {
+    console.log("submitting");
     this.successMsg = '';
     this.errorMsg = '';
     if (this.form.invalid || !this.form.value.time) {
@@ -187,29 +196,49 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const v = this.form.value;
-    const appt: AppointmentToSend = {
-      serviceName: v.name!,
-      userEmail: this.auth.getUser()?.email || '',
-      appointmentDate: v.date!,
-      time: v.time!,
-      notes: v.notes || undefined,
-    };
-
-    this.submitting = true;
     try {
-      this.store.createAppointment(appt);
-      this.successMsg = 'Rezerwacja zapisana! 💅';
-      this.form.reset({ duration: 60, service: null });
+      this.submitting = true;
+
+      const user = await firstValueFrom(this.auth.getUser());
+      const userEmail = user?.email || '';
+
+      const v = this.form.value;
+      const appt: AppointmentToSend = {
+        serviceName: v.service?.name!,
+        userEmail: userEmail,
+        appointmentDate: v.date!,
+        time: v.time!,
+        notes: v.notes || undefined,
+      };
+
+      console.log("sending appointment: ", appt);
+      this.appointmentService.createAppointment(appt).subscribe({
+        next: (result) => {
+          console.log("appointment creation result: ", result);
+          if(result.success) {
+            this.successMsg = 'Rezerwacja zapisana! 💅';
+            console.log("success");
+            this.form.reset({ duration: 60, service: null });
+          } else if(result.error) {
+            this.errorMsg = result.error;
+          }
+        },
+        error: (e) => {
+          console.log("Error:", e);
+          this.errorMsg = 'Wystąpił nieoczekiwany błąd.';
+        }
+      });
     } catch (e: any) {
+      console.log("Error:", e);
       this.errorMsg = e?.message || 'Nie udało się zapisać terminu.';
     } finally {
+      console.log("finally")
       this.submitting = false;
     }
   }
 
   byCategory(cat: ServiceCategory) {
-    return this.services.filter((s) => s.category === cat);
+    return this.servicesService.getServicesByCategory(cat);
   }
 
   isLoggedIn() {
@@ -222,7 +251,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
 
   get todays() {
     const d = this.form.controls.date.value as string | null;
-    return d ? this.store.byDate()(d) : [];
+    return d ? this.appointmentService.byDate()(d) : [];
   }
 
   private updateUserNameField(user: User | null) {

@@ -10,7 +10,7 @@ import { Appointment } from '../../models/appointment.model';
   styleUrl: './admin-calendar.component.scss',
 })
 export class AdminCalendarComponent {
-  private apptStore = inject(AppointmentService);
+  private appointmentService = inject(AppointmentService);
   calendarDays = signal<CalendarDay[]>([]);
   currentMonth = signal(new Date());
   selectedDay = signal<CalendarDay | null>(null);
@@ -31,7 +31,7 @@ export class AdminCalendarComponent {
 
   private apptsByDate = computed(() => {
     const map = new Map<string, Appointment[]>();
-    for (const a of this.apptStore.appointments()) {
+    for (const a of this.appointmentService.appointments()) {
       const arr = map.get(a.date) ?? [];
       arr.push(a);
       map.set(a.date, arr);

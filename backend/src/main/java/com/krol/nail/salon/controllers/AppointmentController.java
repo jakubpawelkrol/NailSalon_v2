@@ -7,6 +7,7 @@ import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -36,5 +37,11 @@ public class AppointmentController {
     public ResponseEntity<?> getAllAppointments() {
         log.info("Looking for all appointments");
         return ResponseEntity.ok().body(appointmentService.getAllAppointments());
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getAllAppointmentsOnDay(@RequestBody LocalDate date) {
+        log.info("Looking for all appointments on " + date);
+        return ResponseEntity.ok().body(appointmentService.getAllAppointmentsOnCertainDay(date));
     }
 }

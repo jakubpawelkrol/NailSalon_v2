@@ -69,4 +69,13 @@ public class AppointmentService {
                 .map(AppointmentMapper::entityToResponseDto)
                 .toList();
     }
+
+    public List<AppointmentResponseDto> getAllAppointmentsOnCertainDay(LocalDate day) {
+        return Optional.of(appointmentRepository.findByAppointmentStartDateBetween(day.atStartOfDay(), day.plusDays(1).atStartOfDay()))
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(() -> new AppointmentNotFoundException("No appointments for the day: " + day))
+                .stream()
+                .map(AppointmentMapper::entityToResponseDto)
+                .toList();
+    }
 }

@@ -1,4 +1,11 @@
-import { Component, computed, inject, OnInit, signal, OnDestroy } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+  OnDestroy,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppointmentService } from '../../services/common/appointment.service';
 import { CommonModule } from '@angular/common';
@@ -82,7 +89,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
 
     if (!date || !duration) {
       this._availableSlots.set([]);
-      return
+      return;
     }
 
     this.appointmentService.loadAppointmentsForDate(date).subscribe({
@@ -105,14 +112,13 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error loading appointments:', err);
-      }
+      },
     });
   }
-  
 
   private setupFormSubscriptions() {
     this.form.controls.date.valueChanges.subscribe((date) => {
-      if(date) {
+      if (date) {
         this.appointmentService.setSelectedDate(date);
       }
       this.form.controls.time.setValue('');
@@ -136,8 +142,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   private setupUserData() {
     console.log('Setting up user data...');
     console.log('Is logged in:', this.auth.isLoggedIn());
-    
-    // ✅ Subscribe to user changes and update form automatically
+
     this.userSubscription = this.auth.getUser().subscribe({
       next: (user) => {
         console.log('User changed:', user);
@@ -154,12 +159,11 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error in user subscription:', error);
-      }
+      },
     });
   }
 
   ngOnDestroy() {
-    // ✅ Clean up subscription
     this.userSubscription?.unsubscribe();
   }
 

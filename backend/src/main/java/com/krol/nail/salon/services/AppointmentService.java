@@ -85,7 +85,7 @@ public class AppointmentService {
 
     public List<String> getAppointmentExistenceForMonth(int year, int month) {
         LocalDateTime startDate = LocalDate.of(year, month, 1).atStartOfDay();
-        LocalDateTime endDate = LocalDate.of(year, month, 1).plusMonths(1).atStartOfDay().minusSeconds(1);
+        LocalDateTime endDate = LocalDate.of(year, month, 1).plusMonths(1).atStartOfDay();
 
         return Optional.of(appointmentRepository.findDistinctAppointmentDatesInRange(startDate, endDate))
                 .filter(list -> !list.isEmpty())

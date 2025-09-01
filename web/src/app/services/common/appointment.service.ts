@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Appointment, AppointmentToSend } from '../../models/appointment.model';
 import { RestService } from './rest.service';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 
 const BUFFER_MIN = 10;
 
@@ -43,6 +43,10 @@ export class AppointmentService {
     };
   });
 
+  setSelectedDate(dateISO: string): void {
+    this._selectedDate.set(dateISO);
+  }
+
   createAppointment(appointmentData: AppointmentToSend): Observable<{
     success: boolean;
     appointment?: Appointment;
@@ -83,12 +87,36 @@ export class AppointmentService {
 
   loadAppointmentsForDate(dateISO: string): Observable<Appointment[]> {
     console.log('Loading appointments for date: ', dateISO);
+
+    if(this.selectedDate() === dateISO && this.selectedDateAppointments().length > 0) {
+      console.log("Using cached appts in ", dateISO);
+      return of(this.selectedDateAppointments());
+    }
+
     this._selectedDate.set(dateISO);
 
-    return this.restService.getAppointmentByDate(dateISO).pipe(
-      tap((appointments) => {
-        console.log('Loaded appointments: ' + appointments);
-        this._selectedDateAppointments.set(appointments);
+    return this.restService.getNumberOfAppointmentsOnDate(dateISO).pipe(
+      switchMap((count) => {
+        console.log(`Number of appointments on ${dateISO}: ${count}`);
+
+        if(count === 0) {
+          console.log(`No appointments found on ${dateISO}`);
+          this._selectedDateAppointments.set([]);
+          return of([]);
+        } else {
+          console.log(`Found ${count} appointments on ${dateISO}`);
+          return this.restService.getAppointmentByDate(dateISO).pipe(
+            tap((appointments) => {
+              console.log('Loaded appointments: ' + appointments);
+              this._selectedDateAppointments.set(appointments);
+            }),
+            catchError((error) => {
+              console.error('Error loading appointments: ', error);
+              this._selectedDateAppointments.set([]);
+              return of([]);
+            })
+          );
+        }
       }),
       catchError((error) => {
         console.error('Error loading appointments: ', error);
@@ -120,28 +148,37 @@ export class AppointmentService {
     );
   }
 
+  clearCaches() {
+    this._selectedDate.set(null);
+    this._selectedDateAppointments.set([]);
+    this._appointmentExistence.set([]);
+  }
+
   loadAppointments(date?: string) {
     // You can implement this when you have a GET endpoint
     // For now, we'll just clear local state
-    return 'eh';
+    return 'TODO';
   }
 
-  isSlotTaken(date: string, time: string, duration: number): boolean {
-    const dateAppts = this._selectedDateAppointments();
-    const start = toMinutes(time);
-    const endwithBuffer = start + duration + BUFFER_MIN;
+  isSlotTaken(date: string, time: string, duration: number): Observable<boolean> {
+    return this.loadAppointmentsForDate(date).pipe(
+      map((appointments) => {
+        const start = toMinutes(time);
+        const endWithBuffer = start + duration + BUFFER_MIN;
 
-    return dateAppts.some((checkedAppt) => {
-      const checkedStartTime = toMinutes(checkedAppt.time);
-      const checkedEndWithBuffer =
-        checkedStartTime + checkedAppt.duration + BUFFER_MIN;
-      return overlaps(
-        start,
-        endwithBuffer,
-        checkedStartTime,
-        checkedEndWithBuffer
-      );
-    });
+        return appointments.some((checkedAppt) => {
+          const checkedStartTime = toMinutes(checkedAppt.time);
+          const checkedEndWithBuffer =
+            checkedStartTime + checkedAppt.duration + BUFFER_MIN;
+          return overlaps(
+            start,
+            endWithBuffer,
+            checkedStartTime,
+            checkedEndWithBuffer
+          );
+        });
+      })
+    );
   }
 
   clearSelectedDate() {
@@ -154,7 +191,7 @@ export class AppointmentService {
       list.filter((a) => a.id !== id)
     );
 
-    if (this._selectedDateAppointments().length === 0 && this._selectedDate()) {
+    if (this.selectedDateAppointments().length === 0 && this.selectedDate()) {
       this._appointmentExistence.update((existence) => ({
         ...existence,
         [this.selectedDate()!]: false,

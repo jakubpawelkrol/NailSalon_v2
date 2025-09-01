@@ -30,7 +30,15 @@ export class RestService {
     );
   }
 
+  getNumberOfAppointmentsOnDate(date: string): Observable<Number> {
+    console.log("getting number of appts for date: ", date);
+    return this.http.get<Number>(
+      `${this.baseUrl}/appointments/getCount/${date}`
+    );
+  }
+
   getAppointmentByDate(date: string): Observable<Appointment[]> {
+    console.log("getting appts for date: ", date);
     return this.http.get<Appointment[]>(
       `${this.baseUrl}/appointments/getDate/${date}`
     );
@@ -41,7 +49,7 @@ export class RestService {
     month: number
   ): Observable<string[]> {
     return this.http.get<string[]>(
-      `${this.baseUrl}/appointments/exists/${year}/${month + 1}`
+      `${this.baseUrl}/appointments/exists/${year}/${month}`
     );
   }
 

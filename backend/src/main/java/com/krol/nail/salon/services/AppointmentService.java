@@ -95,4 +95,12 @@ public class AppointmentService {
                 .map(LocalDate::toString)
                 .toList();
     }
+
+    public Long areThereAppointmentsOnDate(LocalDate date) {
+        LocalDateTime startDate = date.atStartOfDay();
+        LocalDateTime endDate = date.plusDays(1).atStartOfDay().minusSeconds(1);
+        Long res = appointmentRepository.countByAppointmentStartDate(startDate, endDate);
+        log.info("Found {} appointments on date: {}", res, date);
+        return res;
+    }
 }

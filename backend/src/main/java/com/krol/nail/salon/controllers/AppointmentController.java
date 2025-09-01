@@ -3,7 +3,6 @@ package com.krol.nail.salon.controllers;
 import com.krol.nail.salon.dtos.AppointmentRequestDto;
 import com.krol.nail.salon.services.AppointmentService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,9 +38,15 @@ public class AppointmentController {
         return ResponseEntity.ok().body(appointmentService.getAllAppointments());
     }
 
+    @GetMapping("/getCount/{date}")
+    public ResponseEntity<?> areThereAppointmentsOnDate(@PathVariable(name = "date") LocalDate date) {
+        log.info("Checking if there are any appointments at all on {}", date);
+        return ResponseEntity.ok().body(appointmentService.areThereAppointmentsOnDate(date));
+    }
+
     @GetMapping("/getDate/{date}")
-    public ResponseEntity<?> getAllAppointmentsOnDay(@PathVariable LocalDate date) {
-        log.info("Looking for all appointments on " + date);
+    public ResponseEntity<?> getAllAppointmentsOnDay(@PathVariable(name = "date") LocalDate date) {
+        log.info("Looking for all appointments on {}", date);
         return ResponseEntity.ok().body(appointmentService.getAllAppointmentsOnCertainDay(date));
     }
 

@@ -1,14 +1,14 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppointmentService } from '../../services/common/appointment.service';
 import { CommonModule } from '@angular/common';
 import { AppointmentToSend } from '../../models/appointment.model';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, startWith } from 'rxjs/operators';
+import { map, startWith, take } from 'rxjs/operators';
 import { ServiceItem, ServiceCategory } from '../../models/services.model';
 import { AuthService } from '../../services/common/auth.service';
 import { User } from '../../models/auth.model';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { ServicesService } from '../../services/common/services.service';
 
 const SLOT_MIN = 10;
@@ -35,7 +35,7 @@ function overlaps(a1: number, a2: number, b1: number, b2: number) {
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
 })
-export class ScheduleComponent implements OnInit {
+export class ScheduleComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private appointmentService = inject(AppointmentService);
   private auth = inject(AuthService);
@@ -51,7 +51,7 @@ export class ScheduleComponent implements OnInit {
     notes: [''],
   });
 
-  currentUser = this.auth.getUser();
+  private userSubscription?: Subscription;
 
   ngOnInit() {
     this.setupUserData();
@@ -62,6 +62,7 @@ export class ScheduleComponent implements OnInit {
     this.setupFormSubscriptions();
   }
 
+  currentUser = this.auth.getUser();
   client$: string | null = null;
   services = this.servicesService.services;
   categories = computed<ServiceCategory[]>(() => {
@@ -72,14 +73,55 @@ export class ScheduleComponent implements OnInit {
       )
     );
   });
+  private _availableSlots = signal<string[]>([]);
+  readonly availableSlots = this._availableSlots.asReadonly();
+
+  private updateAvailableSlots() {
+    const date = this.dateSig();
+    const duration = Number(this.durationSig() ?? 0);
+
+    if (!date || !duration) {
+      this._availableSlots.set([]);
+      return
+    }
+
+    this.appointmentService.loadAppointmentsForDate(date).subscribe({
+      next: (appointments) => {
+        const dayAppts = appointments.filter((a) => a.date === date);
+        const busy: Array<[number, number]> = dayAppts.map((a) => {
+          const s = toMinutes(a.time);
+          return [s, s + a.duration + BUFFER_MIN];
+        });
+
+        const slots: string[] = [];
+        for (let t = WORK_START; t <= WORK_END; t += SLOT_MIN) {
+          const endWithBuffer = t + duration + BUFFER_MIN;
+          const collides = busy.some(([b1, b2]) =>
+            overlaps(t, endWithBuffer, b1, b2)
+          );
+          if (!collides) slots.push(toHHMM(t));
+        }
+        this._availableSlots.set(slots);
+      },
+      error: (err) => {
+        console.error('Error loading appointments:', err);
+      }
+    });
+  }
+  
 
   private setupFormSubscriptions() {
-    this.form.controls.date.valueChanges.subscribe(() =>
-      this.form.controls.time.setValue('')
-    );
-    this.form.controls.duration.valueChanges.subscribe(() =>
-      this.form.controls.time.setValue('')
-    );
+    this.form.controls.date.valueChanges.subscribe((date) => {
+      if(date) {
+        this.appointmentService.setSelectedDate(date);
+      }
+      this.form.controls.time.setValue('');
+      this.updateAvailableSlots();
+    });
+    this.form.controls.duration.valueChanges.subscribe(() => {
+      this.form.controls.time.setValue('');
+      this.updateAvailableSlots();
+    });
     this.form.controls.service.valueChanges.subscribe((svc) => {
       if (svc) {
         this.form.controls.duration.setValue(svc.duration, { emitEvent: true });
@@ -92,19 +134,33 @@ export class ScheduleComponent implements OnInit {
   }
 
   private setupUserData() {
-    // Check if user is already logged in (synchronous check)
-    if (this.auth.isLoggedIn()) {
-      this.currentUser
-        .subscribe((user) => {
-          if (user) {
-            this.form.controls.name.setValue(
-              `${user.firstName} ${user.lastName}`
-            );
-            this.form.controls.name.disable();
-          }
-        })
-        .unsubscribe();
-    }
+    console.log('Setting up user data...');
+    console.log('Is logged in:', this.auth.isLoggedIn());
+    
+    // ✅ Subscribe to user changes and update form automatically
+    this.userSubscription = this.auth.getUser().subscribe({
+      next: (user) => {
+        console.log('User changed:', user);
+        if (user && this.auth.isLoggedIn()) {
+          const fullName = `${user.firstName} ${user.lastName}`.trim();
+          console.log('Setting name to:', fullName);
+          this.form.controls.name.setValue(fullName);
+          this.client$ = fullName;
+        } else {
+          // Clear the name if user is logged out
+          this.form.controls.name.setValue('');
+          this.client$ = null;
+        }
+      },
+      error: (error) => {
+        console.error('Error in user subscription:', error);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    // ✅ Clean up subscription
+    this.userSubscription?.unsubscribe();
   }
 
   // sygnały z daty i czasu trwania (dla przeliczeń slotów)
@@ -121,33 +177,6 @@ export class ScheduleComponent implements OnInit {
     ),
     { initialValue: Number(this.form.controls.duration.value ?? 0) }
   );
-
-  // reagujemy na zmianę usługi: ustawiamy duration + serviceText, czyścimy time
-
-  // dostępne sloty – jak w poprzedniej poprawionej wersji
-  readonly availableSlots = computed(() => {
-    const date = this.dateSig();
-    const duration = Number(this.durationSig() ?? 0);
-    if (!date || !duration) return [];
-
-    const dayAppts = this.appointmentService
-      .selectedDateAppointments()
-      .filter((a) => a.date === date);
-    const busy: Array<[number, number]> = dayAppts.map((a) => {
-      const s = toMinutes(a.time);
-      return [s, s + a.duration + BUFFER_MIN];
-    });
-
-    const slots: string[] = [];
-    for (let t = WORK_START; t <= WORK_END; t += SLOT_MIN) {
-      const endWithBuffer = t + duration + BUFFER_MIN;
-      const collides = busy.some(([b1, b2]) =>
-        overlaps(t, endWithBuffer, b1, b2)
-      );
-      if (!collides) slots.push(toHHMM(t));
-    }
-    return slots;
-  });
 
   pickSlot(t: string) {
     this.form.controls.time.setValue(t);
@@ -208,6 +237,7 @@ export class ScheduleComponent implements OnInit {
     } finally {
       console.log('finally');
       this.setupUserData();
+      this.appointmentService.clearCaches();
       this.submitting = false;
     }
   }

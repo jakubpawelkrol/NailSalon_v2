@@ -109,7 +109,7 @@ export class CalendarComponent implements OnInit {
   }
 
   loadCurrentMonthExistence() {
-    this.loadMonthExistence(this.currentYear(), this.currentMonth());
+    this.loadMonthExistence(this.currentYear(), this.currentMonth() + 1);
   }
 
   loadMonthExistence(year: number, month: number) {

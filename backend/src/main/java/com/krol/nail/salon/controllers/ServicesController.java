@@ -25,13 +25,7 @@ public class ServicesController {
 
     @GetMapping("/getAll")
     public ResponseEntity<?> listAllServices() {
-        List<ServiceDto> list = null;
         log.info("Reading all services");
-        try {
-            list = servicesService.getAllServices();
-            return ResponseEntity.ok().body(list);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error fetching the services data: " + e.getMessage());
-        }
+        return ResponseEntity.ok().body(servicesService.getAllServices());
     }
 }

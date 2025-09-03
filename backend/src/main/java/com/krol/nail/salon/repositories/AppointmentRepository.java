@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +14,7 @@ import java.util.UUID;
 public interface AppointmentRepository extends JpaRepository<Appointment, UUID> {
     List<Appointment> findByAppointmentStartDateBetween(LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT DISTINCT FUNCTION('DATE', a.appointmentStartDate) FROM Appointment a WHERE a.appointmentStartDate >= :startDate AND a.appointmentStartDate < :endDate ORDER BY FUNCTION('DATE', a.appointmentStartDate)")
+    @Query("SELECT a.appointmentStartDate FROM Appointment a WHERE a.appointmentStartDate >= :startDate AND a.appointmentStartDate < :endDate")
     List<LocalDateTime> findDistinctAppointmentDatesInRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     @Query("SELECT COUNT(a) FROM Appointment a WHERE a.appointmentStartDate >= :startDate AND a.appointmentStartDate <= :endDate")

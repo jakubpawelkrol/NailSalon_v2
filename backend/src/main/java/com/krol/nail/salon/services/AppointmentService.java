@@ -19,9 +19,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -83,17 +82,17 @@ public class AppointmentService {
                 .toList();
     }
 
-    public List<String> getAppointmentExistenceForMonth(int year, int month) {
+    public Set<String> getAppointmentExistenceForMonth(int year, int month) {
         LocalDateTime startDate = LocalDate.of(year, month, 1).atStartOfDay();
         LocalDateTime endDate = LocalDate.of(year, month, 1).plusMonths(1).atStartOfDay();
 
         return Optional.of(appointmentRepository.findDistinctAppointmentDatesInRange(startDate, endDate))
                 .filter(list -> !list.isEmpty())
-                .orElseThrow(() -> new AppointmentNotFoundException("This month does not contain appointments!"))
+                .orElse(List.of())
                 .stream()
                 .map(LocalDateTime::toLocalDate)
                 .map(LocalDate::toString)
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     public Long areThereAppointmentsOnDate(LocalDate date) {

@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT.value(),
                 new Date(),
                 ex.getMessage(),
-                request.getRequestedSessionId()
+                appointment.toString()
         );
     }
 

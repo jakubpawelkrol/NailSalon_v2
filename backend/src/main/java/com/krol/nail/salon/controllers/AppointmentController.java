@@ -5,6 +5,8 @@ import com.krol.nail.salon.services.AppointmentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -21,7 +23,8 @@ public class AppointmentController {
     }
 
     @PostMapping("/schedule")
-    public ResponseEntity<?> saveAppointment(@RequestBody AppointmentRequestDto appointment) {
+    public ResponseEntity<?> saveAppointment(@RequestBody AppointmentRequestDto appointment, WebRequest request) {
+        request.setAttribute("appointment", appointment, RequestAttributes.SCOPE_REQUEST);
         log.info("Saving appointment: " + appointment.toString());
         return ResponseEntity.ok().body(appointmentService.saveAppointment(appointment));
     }
@@ -29,7 +32,7 @@ public class AppointmentController {
     @GetMapping("/getId/{id}")
     public ResponseEntity<?> getAppointmentById(@PathVariable UUID uuid) {
         log.info("Looking for appointment ID: " + uuid);
-        return ResponseEntity.ok().body(appointmentService.getAppointment(uuid));
+        return ResponseEntity.ok().body(appointmentService.getAppointmentWithUUID(uuid));
     }
 
     @GetMapping("/getAll")

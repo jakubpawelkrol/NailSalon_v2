@@ -1,6 +1,7 @@
 package com.krol.nail.salon.exceptions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.krol.nail.salon.dtos.AppointmentRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
 @RestControllerAdvice
@@ -40,10 +44,25 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(value = AppointmentConflictException.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public ErrorMessage conflictInAppointmentException(AppointmentConflictException ex, HttpServletRequest request) {
+        AppointmentRequestDto appointment = (AppointmentRequestDto) request.getAttribute("appointment");
+        log.warn("Conflict in the requested appointment time: {}, it overlaps existing appointment(s)",
+                LocalDateTime.of(LocalDate.parse(appointment.getAppointmentDate()),
+                        LocalTime.parse(appointment.getAppointmentTime())));
+        return new ErrorMessage(
+                HttpStatus.CONFLICT.value(),
+                new Date(),
+                ex.getMessage(),
+                request.getRequestedSessionId()
+        );
+    }
+
     @ExceptionHandler(value = {Exception.class, RuntimeException.class, IOException.class})
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorMessage genericException(Exception ex, WebRequest request) {
-        log.error("General Error! ISE: ", ex);
+        log.error("General Error not yet handled by a separate error handler! ISE: ", ex);
         return new ErrorMessage(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 new Date(),

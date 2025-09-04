@@ -19,4 +19,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     @Query("SELECT COUNT(a) FROM Appointment a WHERE a.appointmentStartDate >= :startDate AND a.appointmentStartDate <= :endDate")
     Long countByAppointmentStartDate(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.appointmentStartDate < :endDate AND a.appointmentEndDate > :startDate")
+    boolean checkIfTheNewAppointmentOverlapsExistingOne(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

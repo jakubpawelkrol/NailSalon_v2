@@ -5,6 +5,7 @@ import com.krol.nail.salon.dtos.AppointmentResponseDto;
 import com.krol.nail.salon.entities.Appointment;
 import com.krol.nail.salon.entities.Services;
 import com.krol.nail.salon.entities.User;
+import com.krol.nail.salon.exceptions.AppointmentConflictException;
 import com.krol.nail.salon.exceptions.AppointmentNotFoundException;
 import com.krol.nail.salon.exceptions.ServiceNotFoundException;
 import com.krol.nail.salon.mapper.AppointmentMapper;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AppointmentService {
+    private final byte BUFFER_MINUTES = 10;
+
     private final AppointmentRepository appointmentRepository;
     private final ServicesRepository servicesRepository;
     private final UserRepository userRepository;
@@ -41,10 +44,19 @@ public class AppointmentService {
         User user = userRepository.findByEmail(appointmentRequestDto.getUserEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Username with email: " + appointmentRequestDto.getUserEmail() + " was not found in the database."));
 
-        LocalDate date = LocalDate.parse(appointmentRequestDto.getAppointmentDate(), DateTimeFormatter.ISO_DATE);
-        LocalTime time = LocalTime.parse(appointmentRequestDto.getAppointmentTime(), DateTimeFormatter.ISO_TIME);
+        LocalDate startDate = LocalDate.parse(appointmentRequestDto.getAppointmentDate(), DateTimeFormatter.ISO_DATE);
+        LocalTime startTime = LocalTime.parse(appointmentRequestDto.getAppointmentTime(), DateTimeFormatter.ISO_TIME);
 
-        Appointment appToSave = appointmentRepository.save(new Appointment(service, user, LocalDateTime.of(date, time), appointmentRequestDto.getNotes()));
+        LocalDateTime startTimeWithBuffer = LocalDateTime.of(startDate, startTime.minusMinutes(BUFFER_MINUTES));
+        LocalDateTime endTimeWithBuffer = LocalDateTime.of(startDate, startTime.plusMinutes(service.getDuration()).plusMinutes(BUFFER_MINUTES));
+
+        Appointment appToSave = null;
+
+        if(!appointmentRepository.checkIfTheNewAppointmentOverlapsExistingOne(startTimeWithBuffer, endTimeWithBuffer)) {
+            appToSave = appointmentRepository.save(new Appointment(service, user, LocalDateTime.of(startDate, startTime), appointmentRequestDto.getNotes()));
+        } else {
+            throw new AppointmentConflictException("Appointment time <" + startTime + " - " + startTime.plusMinutes(service.getDuration()) + "> overlaps existing appointments in the database!" );
+        }
 
         return new AppointmentResponseDto(
                 appToSave.getId(),
@@ -57,7 +69,7 @@ public class AppointmentService {
         );
     }
 
-    public AppointmentResponseDto getAppointment(UUID uuid) {
+    public AppointmentResponseDto getAppointmentWithUUID(UUID uuid) {
         return AppointmentMapper.entityToResponseDto(appointmentRepository.findById(uuid)
                 .orElseThrow(() -> new AppointmentNotFoundException("Appointment with ID: " + uuid + " was not found in the database.")));
     }

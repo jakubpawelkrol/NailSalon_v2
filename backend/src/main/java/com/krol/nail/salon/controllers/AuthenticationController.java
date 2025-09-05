@@ -40,8 +40,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequest, HttpServletResponse response) {
-        try {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequest, HttpServletResponse response) throws JsonProcessingException {
+
             log.info("Login Request: {}", loginRequest);
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
@@ -52,10 +52,6 @@ public class AuthenticationController {
             Map<String, Object> responseBody = generateResponse(user, loginRequest, response, AuthAction.LOGIN.getAction());
 
             return ResponseEntity.ok(responseBody);
-        } catch (Exception e) {
-            log.info("Authentication Failed, message: {}", e.getMessage());
-            return ResponseEntity.badRequest().body("Invalid credentials!\n"+ e.getMessage());
-        }
     }
 
     @PostMapping("/signup")

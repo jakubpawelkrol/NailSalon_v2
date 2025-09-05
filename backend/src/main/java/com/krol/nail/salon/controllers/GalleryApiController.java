@@ -24,12 +24,7 @@ public class GalleryApiController {
 
     @GetMapping("/get")
     public ResponseEntity<?> getGallery() throws IOException {
-        List<GalleryItemDto> resultList = null;
-        try {
-            resultList = galleryService.list();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error while fetching gallery: " + e.getMessage());
-        }
+        List<GalleryItemDto> resultList = galleryService.list();
         return ResponseEntity.ok(resultList);
     }
 }

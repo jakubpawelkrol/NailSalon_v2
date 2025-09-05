@@ -24,7 +24,6 @@ export class LoginComponent {
   });
 
   async submit() {
-    console.log('Submitting login form:', this.form.value);
     this.error = '';
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -41,9 +40,7 @@ export class LoginComponent {
       this.error = e?.message || 'Problem z logowaniem';
     } finally {
       this.loading = false;
-      console.log('Login completed, loading: ', this.loading);
     }
-    console.log('Login form submitted:', this.form.value);
   }
 
   hasErr(ctrl: string, err?: string) {

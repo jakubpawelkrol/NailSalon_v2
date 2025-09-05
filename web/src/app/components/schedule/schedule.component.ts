@@ -1,18 +1,21 @@
-import { Component, computed, inject, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+  OnDestroy,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppointmentService } from '../../services/common/appointment.service';
-import { v4 as uuid } from 'uuid';
 import { CommonModule } from '@angular/common';
-import { Appointment } from '../../models/appointment.model';
+import { AppointmentToSend } from '../../models/appointment.model';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, startWith } from 'rxjs/operators';
-import {
-  ServiceItem,
-  ServiceCategory,
-} from '../../models/services.model';
+import { map, startWith, take } from 'rxjs/operators';
+import { ServiceItem, ServiceCategory } from '../../models/services.model';
 import { AuthService } from '../../services/common/auth.service';
 import { User } from '../../models/auth.model';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { ServicesService } from '../../services/common/services.service';
 
 const SLOT_MIN = 10;
@@ -41,17 +44,9 @@ function overlaps(a1: number, a2: number, b1: number, b2: number) {
 })
 export class ScheduleComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
-  private store = inject(AppointmentService);
+  private appointmentService = inject(AppointmentService);
   private auth = inject(AuthService);
   private servicesService = inject(ServicesService);
-
-  // currentUser: User | null = null;
-  // private userSubscription?: Subscription;
-  client$: string | null = null;
-  services: ServiceItem[] = this.servicesService.getServices();
-  categories = Array.from(new Set(this.services.map((s) => s.category)));
-
-  private userSubscription?: Subscription;
 
   form = this.fb.group({
     service: this.fb.control<ServiceItem | null>(null, Validators.required),
@@ -63,22 +58,76 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     notes: [''],
   });
 
+  private userSubscription?: Subscription;
+
   ngOnInit() {
-    // Handle user data here - this is the right place
     this.setupUserData();
+    this.servicesService.loadServicesIfNeeded();
   }
 
-  ngOnDestroy() {
-    this.userSubscription?.unsubscribe();
+  constructor() {
+    this.setupFormSubscriptions();
+  }
+
+  currentUser = this.auth.getUser();
+  client$: string | null = null;
+  services = this.servicesService.services;
+  categories = computed<ServiceCategory[]>(() => {
+    const servicesList = this.services();
+    return Array.from(
+      new Set(
+        servicesList.map((s: { category: ServiceCategory }) => s.category)
+      )
+    );
+  });
+  private _availableSlots = signal<string[]>([]);
+  readonly availableSlots = this._availableSlots.asReadonly();
+
+  private updateAvailableSlots() {
+    const date = this.dateSig();
+    const duration = Number(this.durationSig() ?? 0);
+
+    if (!date || !duration) {
+      this._availableSlots.set([]);
+      return;
+    }
+
+    this.appointmentService.loadAppointmentsForDate(date).subscribe({
+      next: (appointments) => {
+        const dayAppts = appointments.filter((a) => a.date === date);
+        const busy: Array<[number, number]> = dayAppts.map((a) => {
+          const s = toMinutes(a.time);
+          return [s, s + a.duration + BUFFER_MIN];
+        });
+
+        const slots: string[] = [];
+        for (let t = WORK_START; t <= WORK_END; t += SLOT_MIN) {
+          const endWithBuffer = t + duration + BUFFER_MIN;
+          const collides = busy.some(([b1, b2]) =>
+            overlaps(t, endWithBuffer, b1, b2)
+          );
+          if (!collides) slots.push(toHHMM(t));
+        }
+        this._availableSlots.set(slots);
+      },
+      error: (err) => {
+        console.error('Error loading appointments:', err);
+      },
+    });
   }
 
   private setupFormSubscriptions() {
-    this.form.controls.date.valueChanges.subscribe(() =>
-      this.form.controls.time.setValue('')
-    );
-    this.form.controls.duration.valueChanges.subscribe(() =>
-      this.form.controls.time.setValue('')
-    );
+    this.form.controls.date.valueChanges.subscribe((date) => {
+      if (date) {
+        this.appointmentService.setSelectedDate(date);
+      }
+      this.form.controls.time.setValue('');
+      this.updateAvailableSlots();
+    });
+    this.form.controls.duration.valueChanges.subscribe(() => {
+      this.form.controls.time.setValue('');
+      this.updateAvailableSlots();
+    });
     this.form.controls.service.valueChanges.subscribe((svc) => {
       if (svc) {
         this.form.controls.duration.setValue(svc.duration, { emitEvent: true });
@@ -89,19 +138,33 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       this.form.controls.time.setValue('');
     });
   }
-  private setupUserData() {
-    // Check if user is already logged in (synchronous check)
-    if (this.auth.isLoggedIn()) {
-      // Synchronously get the current user value if available
-      let user: User | null = null;
-      this.auth.getUser().subscribe(u => user = u).unsubscribe();
-      this.updateUserNameField(user);
-    }
 
-    // Subscribe to user changes (for login/logout during component lifetime)
-    this.userSubscription = this.auth.getUser().subscribe((user) => {
-      this.updateUserNameField(user);
+  private setupUserData() {
+    console.log('Setting up user data...');
+    console.log('Is logged in:', this.auth.isLoggedIn());
+
+    this.userSubscription = this.auth.getUser().subscribe({
+      next: (user) => {
+        console.log('User changed:', user);
+        if (user && this.auth.isLoggedIn()) {
+          const fullName = `${user.firstName} ${user.lastName}`.trim();
+          console.log('Setting name to:', fullName);
+          this.form.controls.name.setValue(fullName);
+          this.client$ = fullName;
+        } else {
+          // Clear the name if user is logged out
+          this.form.controls.name.setValue('');
+          this.client$ = null;
+        }
+      },
+      error: (error) => {
+        console.error('Error in user subscription:', error);
+      },
     });
+  }
+
+  ngOnDestroy() {
+    this.userSubscription?.unsubscribe();
   }
 
   // sygnały z daty i czasu trwania (dla przeliczeń slotów)
@@ -119,59 +182,6 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     { initialValue: Number(this.form.controls.duration.value ?? 0) }
   );
 
-  // reagujemy na zmianę usługi: ustawiamy duration + serviceText, czyścimy time
-  constructor() {
-    this.setupFormSubscriptions();
-    this.form.controls.date.valueChanges.subscribe(() =>
-      this.form.controls.time.setValue('')
-    );
-    this.form.controls.duration.valueChanges.subscribe(() =>
-      this.form.controls.time.setValue('')
-    );
-    this.form.controls.service.valueChanges.subscribe((svc) => {
-      // auto-uzupełnij pola powiązane z usługą
-      if (svc) {
-        this.form.controls.duration.setValue(svc.duration, { emitEvent: true });
-        this.form.controls.serviceText.setValue(svc.name, { emitEvent: false });
-      } else {
-        this.form.controls.serviceText.setValue('', { emitEvent: false });
-      }
-      this.form.controls.time.setValue('');
-    });
-
-    if (this.auth.isLoggedIn()) {
-      this.auth.getUser().pipe(
-        map((user) => {
-          this.client$ = user ? `${user.firstName} ${user.lastName}` : null;
-        })
-      );
-      this.form.controls.name.setValue(this.client$ || '');
-    }
-  }
-
-  // dostępne sloty – jak w poprzedniej poprawionej wersji
-  readonly availableSlots = computed(() => {
-    const date = this.dateSig();
-    const duration = Number(this.durationSig() ?? 0);
-    if (!date || !duration) return [];
-
-    const dayAppts = this.store.byDate(date);
-    const busy: Array<[number, number]> = dayAppts.map((a) => {
-      const s = toMinutes(a.time);
-      return [s, s + a.duration + BUFFER_MIN];
-    });
-
-    const slots: string[] = [];
-    for (let t = WORK_START; t <= WORK_END; t += SLOT_MIN) {
-      const endWithBuffer = t + duration + BUFFER_MIN;
-      const collides = busy.some(([b1, b2]) =>
-        overlaps(t, endWithBuffer, b1, b2)
-      );
-      if (!collides) slots.push(toHHMM(t));
-    }
-    return slots;
-  });
-
   pickSlot(t: string) {
     this.form.controls.time.setValue(t);
   }
@@ -183,7 +193,8 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       : !!(c?.touched && c.invalid);
   }
 
-  submit() {
+  async submit() {
+    console.log('submitting');
     this.successMsg = '';
     this.errorMsg = '';
     if (this.form.invalid || !this.form.value.time) {
@@ -192,31 +203,51 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const v = this.form.value;
-    const appt: Appointment = {
-      id: uuid(),
-      serviceText: v.serviceText!, // nazwa usługi zapisujemy jako tekst
-      duration: Number(v.duration!),
-      date: v.date!,
-      time: v.time!,
-      name: v.name!,
-      notes: v.notes || undefined,
-    };
-
-    this.submitting = true;
     try {
-      this.store.add(appt);
-      this.successMsg = 'Rezerwacja zapisana! 💅';
-      this.form.reset({ duration: 60, service: null });
+      this.submitting = true;
+
+      const user = await firstValueFrom(this.auth.getUser());
+      const userEmail = user?.email || '';
+
+      const v = this.form.value;
+      const appt: AppointmentToSend = {
+        serviceName: v.service?.name!,
+        userEmail: userEmail,
+        appointmentDate: v.date!,
+        time: v.time!,
+        notes: v.notes || undefined,
+      };
+
+      console.log('sending appointment: ', appt);
+      this.appointmentService.createAppointment(appt).subscribe({
+        next: (result) => {
+          console.log('appointment creation result: ', result);
+          if (result.success) {
+            this.successMsg = 'Rezerwacja zapisana! 💅';
+            console.log('success');
+            this.form.reset({ duration: 60, service: null });
+          } else if (result.error) {
+            this.errorMsg = result.error;
+          }
+        },
+        error: (e) => {
+          console.log('Error:', e);
+          this.errorMsg = 'Wystąpił nieoczekiwany błąd.';
+        },
+      });
     } catch (e: any) {
+      console.log('Error:', e);
       this.errorMsg = e?.message || 'Nie udało się zapisać terminu.';
     } finally {
+      console.log('finally');
+      this.setupUserData();
+      this.appointmentService.clearCaches();
       this.submitting = false;
     }
   }
 
   byCategory(cat: ServiceCategory) {
-    return this.services.filter((s) => s.category === cat);
+    return this.servicesService.getServicesByCategory(cat);
   }
 
   isLoggedIn() {
@@ -229,7 +260,11 @@ export class ScheduleComponent implements OnInit, OnDestroy {
 
   get todays() {
     const d = this.form.controls.date.value as string | null;
-    return d ? this.store.byDate(d) : [];
+    return d
+      ? this.appointmentService
+          .selectedDateAppointments()
+          .filter((a) => a.date === d)
+      : [];
   }
 
   private updateUserNameField(user: User | null) {

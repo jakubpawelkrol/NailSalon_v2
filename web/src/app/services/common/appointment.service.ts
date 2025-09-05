@@ -1,5 +1,7 @@
-import { Injectable, signal } from '@angular/core';
-import { Appointment } from '../../models/appointment.model';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { Appointment, AppointmentToSend } from '../../models/appointment.model';
+import { RestService } from './rest.service';
+import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 
 const BUFFER_MIN = 10;
 
@@ -14,29 +16,186 @@ function overlaps(aStart: number, aEnd: number, bStart: number, bEnd: number) {
 
 @Injectable({ providedIn: 'root' })
 export class AppointmentService {
-  private readonly _appointments = signal<Appointment[]>([]);
-  readonly appointments = this._appointments.asReadonly();
+  private restService = inject(RestService);
 
-  add(appt: Appointment) {
-    const dateAppts = this.byDate(appt.date);
-    const start = toMinutes(appt.time);
-    const endWithBuffer = start + appt.duration + BUFFER_MIN;
+  private _selectedDateAppointments = signal<Appointment[]>([]);
+  readonly selectedDateAppointments =
+    this._selectedDateAppointments.asReadonly();
 
-    const clash = dateAppts.some(a => {
-      const s = toMinutes(a.time);
-      const e = s + a.duration + BUFFER_MIN;
-      return overlaps(start, endWithBuffer, s, e);
-    });
-    if (clash) throw new Error('Ten termin koliduje z inną wizytą.');
+  private _appointmentExistence = signal<string[]>([]);
+  readonly appointmentExistence = this._appointmentExistence.asReadonly();
 
-    this._appointments.update(list => [...list, appt]);
+  private _selectedDate = signal<string | null>(null);
+  readonly selectedDate = this._selectedDate.asReadonly();
+
+  private _currentMonth = signal<{ year: number; month: number } | null>(null);
+  readonly currentMonth = this._currentMonth.asReadonly();
+
+  private _submitting = signal<boolean>(false);
+  readonly submitting = this._submitting.asReadonly();
+
+  private _error = signal<string | null>(null);
+  readonly error = this._error.asReadonly();
+
+  readonly hasAppointments = computed(() => {
+    return (dateISO: string) => {
+      return this._appointmentExistence().includes(dateISO);
+    };
+  });
+
+  setSelectedDate(dateISO: string): void {
+    this._selectedDate.set(dateISO);
+  }
+
+  createAppointment(appointmentData: AppointmentToSend): Observable<{
+    success: boolean;
+    appointment?: Appointment;
+    error?: string;
+  }> {
+    console.log('Creating appointment with data: ', appointmentData);
+    this._submitting.set(true);
+    this._error.set(null);
+
+    return this.restService.postAppointment(appointmentData).pipe(
+      tap((response) => {
+        console.log('Appointment creation response: ', response);
+      }),
+      map((response) => ({
+        success: true,
+        appointment: response as Appointment,
+      })),
+      catchError((error) => {
+        console.error('Error creating appointment:', error);
+
+        let errorMessage = 'Nie udało się zapisać terminu. Spróbuj ponownie.';
+        if (error.status === 400) {
+          errorMessage =
+            'Błędne dane formularza. Sprawdź wprowadzone informacje.';
+        } else if (error.status === 409) {
+          errorMessage = 'Ten termin jest już zajęty. Wybierz inną godzinę.';
+        } else if (error.status === 401) {
+          errorMessage = 'Sesja wygasła. Zaloguj się ponownie.';
+        } else if (error?.error?.message) {
+          errorMessage = error.error.message;
+        }
+        this._error.set(errorMessage);
+        return of({ success: false, error: errorMessage });
+      }),
+      tap(() => this._submitting.set(false))
+    );
+  }
+
+  loadAppointmentsForDate(dateISO: string): Observable<Appointment[]> {
+    console.log('Loading appointments for date: ', dateISO);
+
+    if(this.selectedDate() === dateISO && this.selectedDateAppointments().length > 0) {
+      console.log("Using cached appts in ", dateISO);
+      return of(this.selectedDateAppointments());
+    }
+
+    this._selectedDate.set(dateISO);
+
+    return this.restService.getNumberOfAppointmentsOnDate(dateISO).pipe(
+      switchMap((count) => {
+        console.log(`Number of appointments on ${dateISO}: ${count}`);
+
+        if(count === 0) {
+          console.log(`No appointments found on ${dateISO}`);
+          this._selectedDateAppointments.set([]);
+          return of([]);
+        } else {
+          console.log(`Found ${count} appointments on ${dateISO}`);
+          return this.restService.getAppointmentByDate(dateISO).pipe(
+            tap((appointments) => {
+              console.log('Loaded appointments: ' + appointments);
+              this._selectedDateAppointments.set(appointments);
+            }),
+            catchError((error) => {
+              console.error('Error loading appointments: ', error);
+              this._selectedDateAppointments.set([]);
+              return of([]);
+            })
+          );
+        }
+      }),
+      catchError((error) => {
+        console.error('Error loading appointments: ', error);
+        this._selectedDateAppointments.set([]);
+        return of([]);
+      })
+    );
+  }
+
+  loadAppointmentsExistenceForMonth(
+    year: number,
+    month: number
+  ): Observable<string[]> {
+    console.log(`Loading appointment existence for ${month}/${year}`);
+    this._currentMonth.set({ year, month });
+
+    return this.restService.getAppointmentExistenceByMonth(year, month).pipe(
+      tap((existence) => {
+        console.log(
+          'Loaded appointment existence: ' + JSON.stringify(existence)
+        );
+        this._appointmentExistence.set(existence);
+      }),
+      catchError((error) => {
+        console.error('Error loading appointment existence: ', error);
+        this._appointmentExistence.set([]);
+        return of([]);
+      })
+    );
+  }
+
+  clearCaches() {
+    this._selectedDate.set(null);
+    this._selectedDateAppointments.set([]);
+    this._appointmentExistence.set([]);
+  }
+
+  loadAppointments(date?: string) {
+    // You can implement this when you have a GET endpoint
+    // For now, we'll just clear local state
+    return 'TODO';
+  }
+
+  isSlotTaken(date: string, time: string, duration: number): Observable<boolean> {
+    return this.loadAppointmentsForDate(date).pipe(
+      map((appointments) => {
+        const start = toMinutes(time);
+        const endWithBuffer = start + duration + BUFFER_MIN;
+
+        return appointments.some((checkedAppt) => {
+          const checkedStartTime = toMinutes(checkedAppt.time);
+          const checkedEndWithBuffer =
+            checkedStartTime + checkedAppt.duration + BUFFER_MIN;
+          return overlaps(
+            start,
+            endWithBuffer,
+            checkedStartTime,
+            checkedEndWithBuffer
+          );
+        });
+      })
+    );
+  }
+
+  clearSelectedDate() {
+    this._selectedDate.set(null);
+    this._selectedDateAppointments.set([]);
   }
 
   remove(id: string) {
-    this._appointments.update(list => list.filter(a => a.id !== id));
-  }
+    this._selectedDateAppointments.update((list) =>
+      list.filter((a) => a.id !== id)
+    );
 
-  byDate(dateISO: string) {
-    return this._appointments().filter(a => a.date === dateISO);
+    if (this.selectedDateAppointments().length === 0 && this.selectedDate()) {
+      this._appointmentExistence.update((existence) => ({
+        ...existence,
+        [this.selectedDate()!]: false,
+      }));
+    }
   }
 }

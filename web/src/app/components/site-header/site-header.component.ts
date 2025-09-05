@@ -14,14 +14,10 @@ export class SiteHeaderComponent {
   auth = inject(AuthService);
 
   user$ = this.auth.getUser();
-  
-  greeting$ = this.user$.pipe(
-    map((user) => (user ? `Witaj ${user.firstName}` : null))
-  );
 
-  isLoggedIn$ = this.user$.pipe(
-    map((user) => !!user)
-  );
+  greeting$ = this.user$.pipe(map((user) => (user ? `Witaj ${user?.firstName}` : 'Witaj nieznajoma')));
+
+  isLoggedIn$ = this.user$.pipe(map(user => !!user));
 
   logout() {
     this.auth.logout();

@@ -17,6 +17,12 @@ $white: #fff;
   border-radius: 8px;
 }
 
+.content-center {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
 .contact-info,
 .contact-form {
   flex: 1 1 300px;

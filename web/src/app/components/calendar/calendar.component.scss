@@ -10,6 +10,12 @@
   font-family: sans-serif;
 }
 
+.content-center {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
 .calendar-header {
   display: flex;
   justify-content: space-between;

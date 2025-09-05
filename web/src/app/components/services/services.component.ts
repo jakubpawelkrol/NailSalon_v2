@@ -2,10 +2,11 @@ import { Component, computed, inject } from '@angular/core';
 import { ServiceCategory, ServiceItem } from '../../models/services.model';
 import { ServicesService } from '../../services/common/services.service';
 import { CommonModule } from '@angular/common';
+import { GenericButtonComponent } from "../generic-button/generic-button.component";
 
 @Component({
   selector: 'app-services',
-  imports: [CommonModule],
+  imports: [CommonModule, GenericButtonComponent],
   templateUrl: './services.component.html',
   styleUrl: './services.component.scss'
 })

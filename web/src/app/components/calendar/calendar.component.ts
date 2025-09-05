@@ -1,10 +1,11 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CalendarDay } from '../../models/calendar.model';
 import { AppointmentService } from '../../services/common/appointment.service';
+import { GenericButtonComponent } from "../generic-button/generic-button.component";
 
 @Component({
   selector: 'app-calendar',
-  imports: [],
+  imports: [GenericButtonComponent],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.scss',
 })

@@ -3,10 +3,11 @@ import { RestService } from '../../services/common/rest.service';
 import { GalleryStateService } from '../../services/common/gallery-state.service';
 import { CommonModule } from '@angular/common';
 import { PhotoModel } from '../../models/gallery.model';
+import { GenericButtonComponent } from "../generic-button/generic-button.component";
 
 @Component({
   selector: 'app-gallery',
-  imports: [CommonModule],
+  imports: [CommonModule, GenericButtonComponent],
   templateUrl: './gallery.component.html',
   styleUrl: './gallery.component.scss',
 })

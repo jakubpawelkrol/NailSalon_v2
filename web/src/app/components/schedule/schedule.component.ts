@@ -17,6 +17,7 @@ import { AuthService } from '../../services/common/auth.service';
 import { User } from '../../models/auth.model';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { ServicesService } from '../../services/common/services.service';
+import { GenericButtonComponent } from '../generic-button/generic-button.component';
 
 const SLOT_MIN = 10;
 const BUFFER_MIN = 10;
@@ -38,7 +39,7 @@ function overlaps(a1: number, a2: number, b1: number, b2: number) {
 
 @Component({
   selector: 'app-schedule',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, GenericButtonComponent],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
 })
@@ -224,6 +225,9 @@ export class ScheduleComponent implements OnInit, OnDestroy {
           console.log('appointment creation result: ', result);
           if (result.success) {
             this.successMsg = 'Rezerwacja zapisana! 💅';
+            setTimeout(() => {
+              this.successMsg = '';
+            }, 5000);
             console.log('success');
             this.form.reset({ duration: 60, service: null });
           } else if (result.error) {

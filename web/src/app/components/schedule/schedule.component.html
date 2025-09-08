@@ -122,14 +122,17 @@
       ></textarea>
     </div>
 
-    <!-- AKCJA -->
-    <button
-      class="btn"
-      type="submit"
+    <!-- PRZYCISK ZAPISZ -->
+    <app-button
+      [label]="'Zapisz termin'"
       [disabled]="submitting || form.invalid || !form.value.time"
-    >
-      @if (!submitting) { Zarezerwuj termin } @else { Zapisywanie… }
-    </button>
+      type="submit"
+      variant="primary"
+      size="md"
+      [loadingText]="'Zapisywanie...'"
+      [loading]="submitting"
+      (buttonClick)="submit()"
+    ></app-button>
 
     @if (successMsg) {
     <div class="alert success">{{ successMsg }}</div>
@@ -153,3 +156,13 @@
   </div>
   }
 </section>
+
+<div class="content-center">
+  <app-button
+    label="Cofnij"
+    type="navigate"
+    navigateTo="/"
+    variant="primary"
+    size="inherit"
+  ></app-button>
+</div>

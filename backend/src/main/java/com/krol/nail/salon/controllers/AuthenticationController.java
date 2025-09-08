@@ -123,6 +123,5 @@ public class AuthenticationController {
 
         return Map.of("message", (action + " successful"),
                 "user", userMap);
-
     }
 }

@@ -1,1 +1,13 @@
-<p>generic-button works!</p>
+<button 
+  [class]="buttonClasses"
+  [disabled]="disabled() || loading()"
+  (click)="handleClick()"
+  type="button">
+  
+  @if (loading()) {
+    <span class="btn-spinner"></span>
+    <span class="btn-text">{{ loadingText() }}</span>
+  } @else {
+    <span class="btn-text">{{ label() }}</span>
+  }
+</button>

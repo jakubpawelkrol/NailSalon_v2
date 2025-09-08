@@ -117,10 +117,9 @@ public class AuthenticationController {
         Cookie userCookie = new Cookie("userInfo", URLEncoder.encode(userJson, StandardCharsets.UTF_8));
 
         jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(false);
+        jwtCookie.setSecure(isProdction());
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(24 * 60 * 60);
-        userCookie.setPath("/");
         userCookie.setMaxAge(24 * 60 * 60);
 
         response.addCookie(jwtCookie);

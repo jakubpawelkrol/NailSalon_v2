@@ -56,17 +56,24 @@ export class AuthService {
   }
 
   async signup(userData: SignupRequest): Promise<AuthResponse> {
-    return firstValueFrom(
-      this.http
-        .post<AuthResponse>(`${this.baseUrl}/signup`, userData, {
-          withCredentials: true,
-        })
-        .pipe(
-          tap((response) => {
-            this.handleAuthSuccess(response);
+    try {
+      return firstValueFrom(
+        this.http
+          .post<AuthResponse>(`${this.baseUrl}/signup`, userData, {
+            withCredentials: true,
           })
-        )
-    );
+          .pipe(
+            tap((response) => {
+              this.handleAuthSuccess(response);
+            })
+          )
+      );
+    } catch (error: any) {
+      if (error.status === 429) {
+        throw new Error('Zbyt wiele prób. Spróbuj ponownie później.');
+      }
+      throw error;
+    }
   }
 
   logout(): void {

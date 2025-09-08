@@ -2,8 +2,24 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, input, output } from '@angular/core';
 import { Router } from '@angular/router';
 
-export type ButtonType = 'custom' | 'navigate' | 'confirm' | 'cancel' | 'save' | 'delete' | 'refresh';
-export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'light' | 'dark';
+export type ButtonType =
+  | 'custom'
+  | 'navigate'
+  | 'confirm'
+  | 'cancel'
+  | 'save'
+  | 'submit'
+  | 'delete'
+  | 'refresh';
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'danger'
+  | 'warning'
+  | 'info'
+  | 'light'
+  | 'dark';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'inherit';
 
 @Component({
@@ -14,7 +30,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg' | 'inherit';
 })
 export class GenericButtonComponent {
   private router = inject(Router);
-  
+
   label = input<string>('Click me');
   disabled = input<boolean>(false);
   type = input<ButtonType>('custom');
@@ -29,7 +45,7 @@ export class GenericButtonComponent {
   buttonClick = output<any[]>();
   clickArgs = input<any[]>([]);
   navigateTo = input<string>();
-  
+
   get buttonClasses(): string {
     const classes = ['btn'];
     const buttonSize = this.size();
@@ -40,15 +56,15 @@ export class GenericButtonComponent {
       classes.push('btn-inherit');
     }
 
-    if(this.outline()) {
+    if (this.outline()) {
       classes.push(`btn-outline-${this.variant()}`);
     } else {
       classes.push(`btn-${this.variant()}`);
     }
 
-    if(this.fullWidth()) classes.push('btn-full-width');
-    if(this.loading()) classes.push('btn-loading');
-    if(this.disabled()) classes.push('btn-disabled');
+    if (this.fullWidth()) classes.push('btn-full-width');
+    if (this.loading()) classes.push('btn-loading');
+    if (this.disabled()) classes.push('btn-disabled');
 
     return classes.join(' ');
   }
@@ -57,10 +73,13 @@ export class GenericButtonComponent {
     const args = this.clickArgs() || [];
     const buttonType = this.type();
 
-    switch(buttonType) {
+    switch (buttonType) {
       case 'navigate':
         const route = this.navigateTo();
         this.router.navigate([route]);
+        break;
+      case 'submit':
+        this.buttonClick.emit(['submit', ...args]);
         break;
       case 'cancel':
         this.handleCancel(args);

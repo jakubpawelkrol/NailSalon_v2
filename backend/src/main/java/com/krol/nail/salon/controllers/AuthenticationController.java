@@ -7,11 +7,14 @@ import com.krol.nail.salon.dtos.SignupRequestDto;
 import com.krol.nail.salon.dtos.UserDto;
 import com.krol.nail.salon.dtos.UserRequest;
 import com.krol.nail.salon.entities.AuthAction;
+import com.krol.nail.salon.services.RateLimitterService;
 import com.krol.nail.salon.services.UserService;
 import com.krol.nail.salon.services.jwt.JwtUtil;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,27 +34,29 @@ public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
+    private final RateLimitterService rateLimitterService;
 
-    public AuthenticationController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil, ObjectMapper objectMapper) {
+    public AuthenticationController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil, ObjectMapper objectMapper, RateLimitterService rateLimitterService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.objectMapper = objectMapper;
+        this.rateLimitterService = rateLimitterService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequest, HttpServletResponse response) throws JsonProcessingException {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequest, HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
+        log.info("Login Request: {}", loginRequest);
 
-            log.info("Login Request: {}", loginRequest);
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
-            );
-            log.info("Authentication Successful");
-            UserDto user = userService.findByEmail(loginRequest.email());
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
+        );
+        log.info("Authentication Successful");
+        UserDto user = userService.findByEmail(loginRequest.email());
 
-            Map<String, Object> responseBody = generateResponse(user, loginRequest, response, AuthAction.LOGIN.getAction());
+        Map<String, Object> responseBody = generateResponse(user, loginRequest, response, AuthAction.LOGIN.getAction());
 
-            return ResponseEntity.ok(responseBody);
+        return ResponseEntity.ok(responseBody);
     }
 
     @PostMapping("/signup")

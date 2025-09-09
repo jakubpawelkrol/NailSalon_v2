@@ -35,6 +35,6 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDto findByEmail(String email) {
-        return UserMapper.toDto(userRepository.findByEmail(email).orElse(null));
+        return UserMapper.toDto(userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Username not found: " + email)));
     }
 }

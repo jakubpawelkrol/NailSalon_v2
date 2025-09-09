@@ -7,14 +7,13 @@ import com.krol.nail.salon.dtos.SignupRequestDto;
 import com.krol.nail.salon.dtos.UserDto;
 import com.krol.nail.salon.dtos.UserRequest;
 import com.krol.nail.salon.entities.AuthAction;
-import com.krol.nail.salon.services.RateLimitterService;
 import com.krol.nail.salon.services.UserService;
 import com.krol.nail.salon.services.jwt.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,14 +33,15 @@ public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
-    private final RateLimitterService rateLimitterService;
 
-    public AuthenticationController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil, ObjectMapper objectMapper, RateLimitterService rateLimitterService) {
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
+    public AuthenticationController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil, ObjectMapper objectMapper) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.objectMapper = objectMapper;
-        this.rateLimitterService = rateLimitterService;
     }
 
     @PostMapping("/login")
@@ -117,15 +117,20 @@ public class AuthenticationController {
         Cookie userCookie = new Cookie("userInfo", URLEncoder.encode(userJson, StandardCharsets.UTF_8));
 
         jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(isProdction());
+        jwtCookie.setSecure(isProduction());
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(24 * 60 * 60);
         userCookie.setMaxAge(24 * 60 * 60);
+        userCookie.setSecure(isProduction());
 
         response.addCookie(jwtCookie);
         response.addCookie(userCookie);
 
         return Map.of("message", (action + " successful"),
                 "user", userMap);
+    }
+
+    private boolean isProduction() {
+        return "production".equalsIgnoreCase(activeProfile) || "prod".equalsIgnoreCase(activeProfile);
     }
 }

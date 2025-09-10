@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { PhotoModel } from '../../models/gallery.model';
 import { ServiceItem } from '../../models/services.model';
 import { Appointment, AppointmentToSend } from '../../models/appointment.model';
@@ -51,23 +51,5 @@ export class RestService {
     return this.http.get<string[]>(
       `${this.baseUrl}/appointments/exists/${year}/${month}`
     );
-  }
-
-  getHello(): Observable<string> {
-    return this.http.get(`${this.baseUrl}/auth/hello`, {
-      responseType: 'text',
-    });
-  }
-
-  hello() {
-    this.getHello().subscribe({
-      next: (data) => {
-        this.helloText = data;
-        console.log('Hello text: ', this.helloText);
-      },
-      error: (err) => {
-        console.error('Failed to load hello text:', err);
-      },
-    });
   }
 }

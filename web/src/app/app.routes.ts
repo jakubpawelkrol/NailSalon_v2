@@ -9,6 +9,7 @@ import { LoginComponent } from './components/auth/login/login.component';
 import { AboutComponent } from './components/about/about.component';
 import { SignupComponent } from './components/auth/signup/signup.component';
 import { adminGuard, authGuard } from './components/auth/auth.guard';
+import { UnauthorizedComponent } from './components/unauthorized/unauthorized.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -23,10 +24,11 @@ export const routes: Routes = [
   { path: 'contact', component: ContactComponent },
   {
     path: 'calendar',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     component: CalendarComponent,
   },
   { path: 'login', component: LoginComponent },
   { path: 'about', component: AboutComponent },
   { path: 'signup', component: SignupComponent },
+  { path: 'unauthorized', component: UnauthorizedComponent },
 ];

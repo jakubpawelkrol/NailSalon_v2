@@ -15,8 +15,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,12 +86,7 @@ public class AuthenticationController {
         Cookie jwtCookie = new Cookie("authToken", null);
         Cookie userCookie = new Cookie("userInfo", null);
 
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(false);
-        jwtCookie.setPath("/");
         jwtCookie.setMaxAge(0);
-        userCookie.setHttpOnly(true);
-        userCookie.setPath("/");
         userCookie.setMaxAge(0);
 
         response.addCookie(jwtCookie);
@@ -98,9 +95,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
-    @GetMapping("/hello")
-    public String helloworld() {
-        return "Hello World!";
+    @GetMapping("/isAdmin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> verifyAdminAccess(Authentication authentication) {
+        log.info("Admin access for user {} verified", authentication.getPrincipal().toString());
+        return ResponseEntity.ok().body(Map.of("isAdmin", true));
     }
 
     private Map<String, Object> generateResponse(UserDto user, UserRequest userRequest, HttpServletResponse response, String action) throws JsonProcessingException {

@@ -18,3 +18,5 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000 # 24 hours in milliseconds
+  issuer: ${JWT_ISSUER}
+  audience: ${JWT_AUDIENCE}

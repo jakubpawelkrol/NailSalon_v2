@@ -13,13 +13,8 @@ import { AsyncPipe } from '@angular/common';
 })
 export class HomeComponent {
   private auth = inject(AuthService);
-  private rest = inject(RestService);
 
   user$ = this.auth.getUser();
   isLoggedIn$ = this.user$.pipe(map((user) => !!user));
-  isAdmin$ = this.user$.pipe(map((user) => user?.role.includes('ADMIN')));
-
-  helloWorld() {
-    this.rest.hello();
-  }
+  isAdmin$ = this.auth.isAdmin();
 }

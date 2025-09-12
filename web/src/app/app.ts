@@ -10,5 +10,5 @@ import { FooterComponent } from "./components/footer/footer.component";
   styleUrl: './app.scss',
 })
 export class App {
-  protected readonly title = signal('nail-salon-scheduler');
+  protected readonly title = signal('Nail salon scheduler');
 }

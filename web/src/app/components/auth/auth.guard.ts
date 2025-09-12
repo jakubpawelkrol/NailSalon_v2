@@ -7,10 +7,9 @@ export const authGuard: CanActivateFn = (_route, _state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  return authService.getUser().pipe(
-    take(1),
-    map((user) => {
-      if (user) {
+  return authService.isAuthenticated().pipe(
+    map((isAuth) => {
+      if (isAuth) {
         return true;
       } else {
         router.navigate(['/login']);
@@ -24,13 +23,14 @@ export const adminGuard: CanActivateFn = (_route, _state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  return authService.getUser().pipe(
+  return authService.isAdmin().pipe(
     take(1),
-    map((user) => {
-      if (user && user.role.includes('ADMIN')) {
+    map((isAdmin) => {
+      console.log('AdminGuard: Current user is admin ', isAdmin);
+      if (isAdmin) {
         return true;
       } else {
-        router.navigate(['/login']);
+        router.navigate(['/unauthorized']);
         return false;
       }
     })

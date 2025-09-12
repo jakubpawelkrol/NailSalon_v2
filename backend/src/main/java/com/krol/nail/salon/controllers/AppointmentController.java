@@ -25,7 +25,7 @@ public class AppointmentController {
     @PostMapping("/schedule")
     public ResponseEntity<?> saveAppointment(@RequestBody AppointmentRequestDto appointment, WebRequest request) {
         request.setAttribute("appointment", appointment, RequestAttributes.SCOPE_REQUEST);
-        log.info("Saving appointment: " + appointment.toString());
+        log.info("Saving appointment: " + appointment);
         return ResponseEntity.ok().body(appointmentService.saveAppointment(appointment));
     }
 

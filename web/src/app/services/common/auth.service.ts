@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, tap, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, tap, firstValueFrom, Observable, map } from 'rxjs';
 import {
   AuthResponse,
   LoginRequest,
@@ -8,6 +8,7 @@ import {
 } from '../../models/auth.model';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { RestService } from './rest.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,8 @@ export class AuthService {
   private baseUrl = '/api/auth';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   private currentUser$ = this.currentUserSubject.asObservable();
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  private isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   private http = inject(HttpClient);
   private router = inject(Router);
@@ -25,12 +28,11 @@ export class AuthService {
   }
 
   private checkExistingAuth(): void {
-    const user = this.getUserFromCookie();
-    if (user && this.hasAuthCookie()) {
-      this.currentUserSubject.next(user);
-    } else {
-      this.currentUserSubject.next(null);
-    }
+    this.http.get<any>(`${this.baseUrl}/verify`, { withCredentials: true })
+    .subscribe({
+      next: () => this.isAuthenticatedSubject.next(true),
+      error: () => this.isAuthenticatedSubject.next(false)
+    });
   }
 
   getUser() {
@@ -39,6 +41,10 @@ export class AuthService {
 
   getUserSubscription() {
     return this.currentUser$;
+  }
+
+  isAuthenticated() {
+    return this.isAuthenticated$;
   }
 
   async login(credentials: LoginRequest): Promise<AuthResponse> {
@@ -50,23 +56,31 @@ export class AuthService {
         .pipe(
           tap((response) => {
             this.handleAuthSuccess(response);
+            this.isAuthenticatedSubject.next(true);
           })
         )
     );
   }
 
   async signup(userData: SignupRequest): Promise<AuthResponse> {
-    return firstValueFrom(
-      this.http
-        .post<AuthResponse>(`${this.baseUrl}/signup`, userData, {
-          withCredentials: true,
-        })
-        .pipe(
-          tap((response) => {
-            this.handleAuthSuccess(response);
+    try {
+      return firstValueFrom(
+        this.http
+          .post<AuthResponse>(`${this.baseUrl}/signup`, userData, {
+            withCredentials: true,
           })
-        )
-    );
+          .pipe(
+            tap((response) => {
+              this.handleAuthSuccess(response);
+            })
+          )
+      );
+    } catch (error: any) {
+      if (error.status === 429) {
+        throw new Error('Zbyt wiele prób. Spróbuj ponownie później.');
+      }
+      throw error;
+    }
   }
 
   logout(): void {
@@ -76,11 +90,13 @@ export class AuthService {
       .subscribe({
         next: () => {
           this.currentUserSubject.next(null);
+          this.isAuthenticatedSubject.next(false);
           this.router.navigate(['/']);
         },
         error: () => {
           // Even if backend call fails, clear frontend state
           this.currentUserSubject.next(null);
+          this.isAuthenticatedSubject.next(false);
           this.router.navigate(['/']);
         },
       });
@@ -123,9 +139,15 @@ export class AuthService {
     return !!this.getUserFromCookie() && this.hasAuthCookie();
   }
 
-  isAdmin(): boolean {
-    const user = this.getUserFromCookie();
-    return user?.role === 'ADMIN';
+  isAdmin(): Observable<boolean> {
+    console.log("Checking if user is admin");
+    return this.http.get<{ isAdmin : boolean }>(`${this.baseUrl}/isAdmin`, { withCredentials: true })
+    .pipe(
+      map((response) => {
+        console.log('isAdmin check response:', response);
+        return response.isAdmin;
+      })
+    );
   }
 
   isUser(): boolean {

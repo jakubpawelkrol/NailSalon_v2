@@ -1,5 +1,6 @@
 package com.krol.nail.salon.configuration;
 
+import com.krol.nail.salon.services.jwt.RateLimitingFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -25,13 +26,15 @@ public class SecurityConfig {
     private final CorsConfigurationSource corsConfigurationSource;
     private final AuthenticationProvider authenticationProvider;
     private final Environment environment;
+    private final RateLimitingFilter rateLimitingFilter;
 
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CorsConfigurationSource corsConfigurationSource, AuthenticationProvider authenticationProvider, Environment environment) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CorsConfigurationSource corsConfigurationSource, AuthenticationProvider authenticationProvider, Environment environment, RateLimitingFilter rateLimitingFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.corsConfigurationSource = corsConfigurationSource;
         this.authenticationProvider = authenticationProvider;
         this.environment = environment;
+        this.rateLimitingFilter = rateLimitingFilter;
     }
 
     @Bean
@@ -43,7 +46,10 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/signup").permitAll()
+                        .requestMatchers("/api/services/**").permitAll()
+                        .requestMatchers("/api/images/**").permitAll()
                         .requestMatchers("/images/**", "/thumbnails/**").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -56,7 +62,8 @@ public class SecurityConfig {
                     }
                 })
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 }

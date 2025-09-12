@@ -10,11 +10,15 @@ import com.krol.nail.salon.entities.AuthAction;
 import com.krol.nail.salon.services.UserService;
 import com.krol.nail.salon.services.jwt.JwtUtil;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +36,9 @@ public class AuthenticationController {
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
     public AuthenticationController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil, ObjectMapper objectMapper) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
@@ -40,36 +47,36 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequest, HttpServletResponse response) throws JsonProcessingException {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequest, HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
+        log.debug("Login Request: {}", loginRequest);
 
-            log.info("Login Request: {}", loginRequest);
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
-            );
-            log.info("Authentication Successful");
-            UserDto user = userService.findByEmail(loginRequest.email());
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
+        );
+        log.debug("Authentication Successful");
+        UserDto user = userService.findByEmail(loginRequest.email());
 
-            Map<String, Object> responseBody = generateResponse(user, loginRequest, response, AuthAction.LOGIN.getAction());
+        Map<String, Object> responseBody = generateResponse(user, loginRequest, response, AuthAction.LOGIN.getAction());
 
-            return ResponseEntity.ok(responseBody);
+        return ResponseEntity.ok(responseBody);
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequestDto signupRequest, HttpServletResponse response) {
         try {
-            log.info("Signup Request: {}", signupRequest);
+            log.debug("Signup Request: {}", signupRequest);
             UserDto user = userService.createUser(
                     signupRequest.email(),
                     signupRequest.password(),
                     signupRequest.firstName(),
                     signupRequest.lastName()
             );
-            log.info("User Created: {}", user);
+            log.debug("User Created: {}", user);
             Map<String, Object> responseBody = generateResponse(user, signupRequest, response, AuthAction.SIGNUP.getAction());
 
             return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
-            log.info("Signup Failed, message: {}", e.getMessage());
+            log.warn("Signup Failed, message: {}", e.getMessage());
             return ResponseEntity.badRequest().body("Error creating user!\n"+ e.getMessage());
         }
     }
@@ -79,12 +86,7 @@ public class AuthenticationController {
         Cookie jwtCookie = new Cookie("authToken", null);
         Cookie userCookie = new Cookie("userInfo", null);
 
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(false);
-        jwtCookie.setPath("/");
         jwtCookie.setMaxAge(0);
-        userCookie.setHttpOnly(true);
-        userCookie.setPath("/");
         userCookie.setMaxAge(0);
 
         response.addCookie(jwtCookie);
@@ -93,9 +95,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
-    @GetMapping("/hello")
-    public String helloworld() {
-        return "Hello World!";
+    @GetMapping("/isAdmin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> verifyAdminAccess(Authentication authentication) {
+        log.debug("Admin access for user {} verified", authentication.getPrincipal().toString());
+        return ResponseEntity.ok().body(Map.of("isAdmin", true));
     }
 
     private Map<String, Object> generateResponse(UserDto user, UserRequest userRequest, HttpServletResponse response, String action) throws JsonProcessingException {
@@ -112,16 +116,20 @@ public class AuthenticationController {
         Cookie userCookie = new Cookie("userInfo", URLEncoder.encode(userJson, StandardCharsets.UTF_8));
 
         jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(false);
+        jwtCookie.setSecure(isProduction());
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(24 * 60 * 60);
-        userCookie.setPath("/");
         userCookie.setMaxAge(24 * 60 * 60);
+        userCookie.setSecure(isProduction());
 
         response.addCookie(jwtCookie);
         response.addCookie(userCookie);
 
         return Map.of("message", (action + " successful"),
                 "user", userMap);
+    }
+
+    private boolean isProduction() {
+        return "production".equalsIgnoreCase(activeProfile) || "prod".equalsIgnoreCase(activeProfile);
     }
 }

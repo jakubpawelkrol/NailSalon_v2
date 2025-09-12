@@ -5,7 +5,12 @@
   <div class="auth-section">
     @if (isLoggedIn$ | async) {
     <span class="welcome-text">{{ greeting$ | async }}</span>
-    <button (click)="logout()">Wyloguj</button>
+    <app-dropdown-menu
+      [items]="menuItems()"
+      [isOpen]="isDropdownOpen()"
+      (dropdownToggle)="toggleDropdown()"
+      (itemClick)="onItemClick($event)"
+    ></app-dropdown-menu>
     } @else {
     <a routerLink="/login" class="login-link">Zaloguj</a>
     }

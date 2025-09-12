@@ -44,13 +44,13 @@ public class UserService implements UserDetailsService {
     }
 
     public boolean verifyAdminAccess(String email) {
-        Role role = userRepository.findRoleByEmail(email);
+        Role role = userRepository.getRoleWithEmail(email);
         boolean isAdmin = role.name().equals("ADMIN");
         log.info("isAdmin? {}", isAdmin);
         return isAdmin;
     }
 
     public Role getRole(String email) {
-        return userRepository.findRoleByEmail(email);
+        return userRepository.getRoleWithEmail(email);
     }
 }

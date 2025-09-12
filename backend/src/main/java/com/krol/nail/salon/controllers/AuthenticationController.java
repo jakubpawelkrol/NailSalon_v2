@@ -96,10 +96,14 @@ public class AuthenticationController {
     }
 
     @GetMapping("/isAdmin")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> verifyAdminAccess(Authentication authentication) {
-        log.debug("Admin access for user {} verified", authentication.getPrincipal().toString());
-        return ResponseEntity.ok().body(Map.of("isAdmin", true));
+        log.debug("Admin access for user principal {} verified", authentication.getPrincipal().toString());
+        return ResponseEntity.ok().body(Map.of("isAdmin", userService.verifyAdminAccess("admin@nailsalon.com")));
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyLoginState(Authentication authentication) {
+        return ResponseEntity.ok().body(authentication.getPrincipal());
     }
 
     private Map<String, Object> generateResponse(UserDto user, UserRequest userRequest, HttpServletResponse response, String action) throws JsonProcessingException {

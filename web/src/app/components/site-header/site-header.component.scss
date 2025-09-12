@@ -18,7 +18,7 @@
 .auth-section {
   display: flex;
   align-items: center;
-  gap: 0.5rem; // space between welcome text and button/link
+  gap: 1rem; // space between welcome text and button/link
 }
 
 .logo-icon {
@@ -30,6 +30,10 @@
   font-size: 0.9rem;
   margin-right: 1rem;
   font-weight: 500;
+
+  @media (max-width: 768px) {
+    display: none; // Hide greeting on mobile to save space
+  }
 }
 
 button {

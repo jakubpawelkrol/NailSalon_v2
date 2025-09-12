@@ -25,7 +25,7 @@ public class JwtUtil {
     @Value("${jwt.issuer:paz.krol.info}")
     private String issuer;
 
-    @Value("{jwt.audience:nail-salon-app}")
+    @Value("${jwt.audience:nail-salon-app}")
     private String audience;
 
     private final RateLimitingFilter rateLimitingFilter;

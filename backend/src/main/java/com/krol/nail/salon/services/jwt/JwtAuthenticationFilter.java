@@ -31,17 +31,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        log.info("Inside JwtAuthenticationFilter");
+        log.debug("Inside JwtAuthenticationFilter");
         String authorizationHeader = request.getHeader("Authorization");
         String username = null;
         String jwtToken = null;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            log.info("authorizationHeader found.");
+            log.debug("authorizationHeader found.");
             jwtToken = authorizationHeader.substring(7);
         } else {
-            log.info("Cookies token approach:");
+            log.debug("Cookies token approach:");
             if(request.getCookies() != null) {
-                log.info("Cookies found!");
+                log.debug("Cookies found!");
                 for(Cookie cookie : request.getCookies()) {
                     if("authToken".equalsIgnoreCase(cookie.getName())) {
                         jwtToken = cookie.getValue();
@@ -53,19 +53,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             username = jwtUtil.extractUsername(jwtToken);
-            log.info("Extracting username: <{}>", username);
+            log.debug("Extracting username: <{}>", username);
         } catch (Exception e) {
-            logger.warn("JWT expired or invalid!");
+            log.warn("JWT expired or invalid!");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            log.info("Got authenticated");
+            log.debug("Got authenticated");
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             if(jwtUtil.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("UsernamePasswordAuthenticationToken created: {}", authentication);
             }
         }
         filterChain.doFilter(request, response);

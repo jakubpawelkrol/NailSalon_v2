@@ -48,12 +48,12 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequest, HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
-        log.info("Login Request: {}", loginRequest);
+        log.debug("Login Request: {}", loginRequest);
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
         );
-        log.info("Authentication Successful");
+        log.debug("Authentication Successful");
         UserDto user = userService.findByEmail(loginRequest.email());
 
         Map<String, Object> responseBody = generateResponse(user, loginRequest, response, AuthAction.LOGIN.getAction());
@@ -64,19 +64,19 @@ public class AuthenticationController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequestDto signupRequest, HttpServletResponse response) {
         try {
-            log.info("Signup Request: {}", signupRequest);
+            log.debug("Signup Request: {}", signupRequest);
             UserDto user = userService.createUser(
                     signupRequest.email(),
                     signupRequest.password(),
                     signupRequest.firstName(),
                     signupRequest.lastName()
             );
-            log.info("User Created: {}", user);
+            log.debug("User Created: {}", user);
             Map<String, Object> responseBody = generateResponse(user, signupRequest, response, AuthAction.SIGNUP.getAction());
 
             return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
-            log.info("Signup Failed, message: {}", e.getMessage());
+            log.warn("Signup Failed, message: {}", e.getMessage());
             return ResponseEntity.badRequest().body("Error creating user!\n"+ e.getMessage());
         }
     }
@@ -98,7 +98,7 @@ public class AuthenticationController {
     @GetMapping("/isAdmin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> verifyAdminAccess(Authentication authentication) {
-        log.info("Admin access for user {} verified", authentication.getPrincipal().toString());
+        log.debug("Admin access for user {} verified", authentication.getPrincipal().toString());
         return ResponseEntity.ok().body(Map.of("isAdmin", true));
     }
 

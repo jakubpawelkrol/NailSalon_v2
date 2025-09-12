@@ -2,6 +2,7 @@ package com.krol.nail.salon.services.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.AeadAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -52,6 +54,7 @@ public class JwtUtil {
 
     public String generateToken(UserDetails user) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("myClaim", List.of("something", "other_val"));
         return createToken(claims, user.getUsername());
     }
 
@@ -59,6 +62,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .claims(claims)
                 .subject(subject)
+                .issuer("paz.krol.info")
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey())
